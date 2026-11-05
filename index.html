@@ -9,9 +9,15 @@
 <meta name="apple-mobile-web-app-title" content="Stereonet">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="author" content="Nsem">
-<meta name="description" content="Stereonet by Nsem: free stereographic projection tool for structural geology, with expert, standard and simple interpretations.">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Stereonet by Nsem</title>
+<title>Free Web Stereonet – Plot Strike & Dip Online | Stereonet by Nsem</title>
+<meta name="description" content="Free web stereonet for structural geology. Works in your browser with no sign-up. Plot strike and dip, rotate in 2D and 3D, find fold axes, and install it as an app.">
+<link rel="canonical" href="https://aexnsem.github.io/STEREONET/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Free Web Stereonet – Stereonet by Nsem">
+<meta property="og:description" content="Free, works in your browser, installable as an app.">
+<meta property="og:image" content="https://aexnsem.github.io/STEREONET/icon-512.png">
+<meta property="og:url" content="https://aexnsem.github.io/STEREONET/">
 <style>
 :root{--bg:#f6f7f9;--card:#fff;--fg:#1a1d23;--mute:#6b7280;--line:#d5d9e0;--grid:#c3c9d3;--acc:#0f766e;--selbg:#e6f4f1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111317;--card:#1b1e25;--fg:#e8eaee;--mute:#9aa1ad;--line:#2e333d;--grid:#3a404c;--acc:#2dd4bf;--selbg:#12302d;color-scheme:dark}}
@@ -55,8 +61,24 @@ button.s{padding:4px 8px;font-size:13px}
 </head>
 <body>
 <main>
-<h1>Stereonet <span class="mute">lower hemisphere</span></h1>
+<h1 style="display:block;font-size:20px">Free Web Stereonet <span class="mute">for structural geology</span></h1>
 <div class="mute" style="margin:-6px 0 10px">Created by <b>Nsem</b></div>
+
+<div class="card" id="getapp">
+  <p style="margin:0 0 8px"><b>100% free · works in your browser · no sign-up · no download needed.</b> Plot strike and dip, rotate the net in 2D or 3D, find fold axes, and get plain-language answers about folds, tilted beds and faults.</p>
+  <button class="p" id="installBtn" hidden>Install the app (free)</button>
+  <p class="mute" style="margin:8px 0 0"><b>Android (Chrome):</b> menu ⋮ → Install app. <b>iPhone (Safari):</b> Share → Add to Home Screen.</p>
+</div>
+<script>
+(function(){
+  var dp,b=document.getElementById('installBtn'),g=document.getElementById('getapp');
+  if(matchMedia('(display-mode: standalone)').matches||navigator.standalone){g.style.display='none';return}
+  addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;b.hidden=false});
+  b.onclick=function(){if(dp){dp.prompt();dp=null;b.hidden=true}};
+  addEventListener('appinstalled',function(){g.style.display='none'});
+})();
+</script>
+
 <details class="card" open>
   <summary style="cursor:pointer;font-weight:600">Start here (3 steps)</summary>
   <ol style="margin:8px 0 0;padding-left:20px">
@@ -692,5 +714,6 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
 setMode('spin');
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
+<script src="tools.js"></script>
 </body>
 </html>
