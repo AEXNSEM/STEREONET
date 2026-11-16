@@ -368,3 +368,4 @@ const d0=window.draw;
 window.draw=function(){d0.apply(this,arguments);try{render()}catch(e){}};
 window.__blk={render};
 })();
+})();
