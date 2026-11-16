@@ -275,4 +275,96 @@ $('tOut').onclick=e=>{
   if(a==='reset'){rot=0;M=[[1,0,0],[0,1,0],[0,0,1]];hist=[];draw();return}
   setMode('tum');pushHist();M=mmul(acts[+a].R,M);draw();
 };
+  // ---------- 3D block diagram (Stage 1) ----------
+(function(){
+const cv3=$('blk'),g=cv3.getContext('2d'),EL=28*D,H=0.7;
+let on=false,vaz=+$('blkAz').value;
+const cs=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const dt=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const add=(a,b,k)=>a.map((c,i)=>c+k*b[i]);
+const FACES=[
+ {n:[0,0,1],v:[[-1,-1,H],[1,-1,H],[1,1,H],[-1,1,H]]},
+ {n:[0,-1,0],v:[[-1,-1,-H],[1,-1,-H],[1,-1,H],[-1,-1,H]]},
+ {n:[0,1,0],v:[[-1,1,-H],[1,1,-H],[1,1,H],[-1,1,H]]},
+ {n:[1,0,0],v:[[1,-1,-H],[1,1,-H],[1,1,H],[1,-1,H]]},
+ {n:[-1,0,0],v:[[-1,-1,-H],[-1,1,-H],[-1,1,H],[-1,-1,H]]}
+];
+const BOUNDS=[[[1,0,0],1],[[-1,0,0],1],[[0,1,0],1],[[0,-1,0],1],[[0,0,1],H],[[0,0,-1],H]];
+function clip(poly,n,off){
+  const out=[];
+  for(let i=0;i<poly.length;i++){
+    const a=poly[i],b=poly[(i+1)%poly.length],da=dt(n,a)-off,db=dt(n,b)-off;
+    if(da<=0)out.push(a);
+    if((da<0&&db>0)||(da>0&&db<0)){const t=da/(da-db);out.push(a.map((c,k)=>c+t*(b[k]-c)))}
+  }
+  return out;
+}
+function activePlane(){
+  const ok=i=>data[i]&&data[i].k==='p'&&!hid[data[i].s];
+  if(selItem!==null&&ok(selItem))return{d:data[selItem],i:selItem};
+  for(let i=data.length-1;i>=0;i--)if(ok(i)&&(selSet===null||data[i].s===selSet))return{d:data[i],i};
+  return null;
+}
+function render(){
+  if(!on)return;
+  const W=cv3.clientWidth;if(!W)return;
+  const Hc=Math.round(W*.75),dpr=window.devicePixelRatio||1,a=vaz*D,ca=Math.cos(a),sa=Math.sin(a);
+  cv3.width=W*dpr;cv3.height=Hc*dpr;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,Hc);
+  const pr=v=>[v[0]*ca+v[1]*sa,v[2]*Math.cos(EL)+(-v[0]*sa+v[1]*ca)*Math.sin(EL)];
+  const cn=[];for(const x of[-1,1])for(const y of[-1,1])for(const z of[-H,H])cn.push(pr([x,y,z]));
+  const xs=cn.map(p=>p[0]),ys=cn.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const sc=Math.min((W-24)/(x1-x0),(Hc-24)/(y1-y0)),ox=W/2-(x0+x1)/2*sc,oy=Hc/2+(y0+y1)/2*sc;
+  const T=v=>{const p=pr(v);return[ox+p[0]*sc,oy-p[1]*sc]};
+  const fg=cs('--fg'),card=cs('--card'),ac=cs('--acc');
+  const poly=(pts,fill,al,stroke,lw,dash)=>{
+    g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();
+    if(fill){g.globalAlpha=al;g.fillStyle=fill;g.fill();g.globalAlpha=1}
+    if(stroke){g.setLineDash(dash||[]);g.strokeStyle=stroke;g.lineWidth=lw||1;g.stroke();g.setLineDash([])}
+  };
+  const arrow=(p,q,col,lw)=>{
+    const t=Math.atan2(q[1]-p[1],q[0]-p[0]),h=9;
+    g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.lineCap='round';
+    g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1]);g.stroke();
+    g.beginPath();g.moveTo(q[0],q[1]);g.lineTo(q[0]-h*Math.cos(t-.4),q[1]-h*Math.sin(t-.4));g.lineTo(q[0]-h*Math.cos(t+.4),q[1]-h*Math.sin(t+.4));g.closePath();g.fill();
+  };
+  const label=(s,p,col)=>{g.font='700 12px system-ui';g.textAlign='center';g.textBaseline='middle';g.lineWidth=3;g.strokeStyle=card;g.strokeText(s,p[0],p[1]);g.fillStyle=col;g.fillText(s,p[0],p[1])};
+  const nw=f=>-f.n[0]*sa+f.n[1]*ca;
+  const act=activePlane();
+  // back faces
+  FACES.filter(f=>nw(f)>0).forEach(f=>poly(f.v.map(T),fg,.07,fg,.8,[4,3]));
+  // plane
+  let pc=null,sv,dv;
+  if(act){
+    const s=act.d.a,d=act.d.b,dd=s+90;
+    sv=[Math.sin(s*D),Math.cos(s*D),0];
+    dv=[Math.sin(dd*D)*Math.cos(d*D),Math.cos(dd*D)*Math.cos(d*D),-Math.sin(d*D)];
+    pc=colorOf(act.d.s);
+    let q=[add(add([0,0,0],sv,-4),dv,-4),add(add([0,0,0],sv,4),dv,-4),add(add([0,0,0],sv,4),dv,4),add(add([0,0,0],sv,-4),dv,4)];
+    BOUNDS.forEach(b=>{if(q.length)q=clip(q,b[0],b[1])});
+    if(q.length>2)poly(q.map(T),pc,.6,pc,2.2);
+  }
+  // front faces + top
+  FACES.filter(f=>nw(f)<=0).forEach(f=>poly(f.v.map(T),fg,f.n[2]?.1:.04,fg,1.4));
+  // north arrow on top surface
+  arrow(T([-.72,-.72,H]),T([-.72,-.2,H]),'#dc2626',2.4);label('N',T([-.72,-.02,H]),'#dc2626');
+  if(act){
+    // strike line + dip arrow on the plane
+    g.setLineDash([5,4]);g.strokeStyle=fg;g.lineWidth=1.2;g.beginPath();
+    const s0=T(add([0,0,0],sv,-.6)),s1=T(add([0,0,0],sv,.6));g.moveTo(s0[0],s0[1]);g.lineTo(s1[0],s1[1]);g.stroke();g.setLineDash([]);
+    arrow(T(add([0,0,0],dv,-.1)),T(add([0,0,0],dv,.5)),fg,3);
+    label(Math.round(act.d.b)+'°',T(add([0,0,0],dv,.68)),fg);
+    label('strike',T(add([0,0,0],sv,.78)),cs('--mute'));
+    $('blkInfo').textContent='#'+(act.i+1)+' · '+lab(act.d)+' · dip direction '+pad(act.d.a+90)+'°';
+  }else $('blkInfo').textContent='Add or select a plane to see it in the block.';
+}
+$('blkBtn').onclick=()=>{
+  on=!on;$('blkWrap').hidden=!on;$('blkBtn').textContent=on?'Hide 3D Block':'Show 3D Block';
+  if(on)render();
+};
+$('blkAz').oninput=e=>{vaz=+e.target.value;render()};
+addEventListener('resize',render);
+// live sync: every add / select / delete / bake / sample already calls draw()
+const d0=window.draw;
+window.draw=function(){d0.apply(this,arguments);try{render()}catch(e){}};
+window.__blk={render};
 })();
