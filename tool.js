@@ -273,7 +273,7 @@ $('tOut').onclick=e=>{
   const a=e.target.dataset&&e.target.dataset.act;if(a===undefined)return;
   if(a==='copy'){overlay("<div class='mute' style='margin-bottom:6px'>Select all and copy.</div><textarea id='ttxt' readonly style='min-height:200px'></textarea>",()=>{const t=$('ttxt');t.value=lastTxt;t.focus();t.select()});return}
   if(a==='reset'){rot=0;M=[[1,0,0],[0,1,0],[0,0,1]];hist=[];draw();return}
-  setMode('tum');pushHist();M=mmul(acts[+a].R,M);draw();
+   setMode('tum');pushHist();M=mmul(acts[+a].R,M);if(window.__tab)__tab('p');draw();
 };
   // ---------- 3D block diagram (Stage 1) ----------
 (function(){
