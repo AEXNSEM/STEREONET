@@ -94,6 +94,15 @@ button.s{padding:4px 8px;font-size:13px}
   <div class="mute" id="status" style="text-align:center;color:#c026d3"></div>
 </div>
 
+<div class="card" id="blkCard">
+  <div class="row" style="margin:0"><button class="p" id="blkBtn">Show 3D Block</button></div>
+  <div id="blkWrap" hidden>
+    <canvas id="blk" style="aspect-ratio:4/3;margin-top:8px"></canvas>
+    <div class="row" style="margin:6px 0 0"><label>View</label><input type="range" id="blkAz" min="0" max="359" value="35" aria-label="3D view azimuth"></div>
+    <div class="mute" id="blkInfo" style="text-align:center;margin-top:4px"></div>
+  </div>
+</div>
+  
 <div class="card">
   <div class="seg" id="modes">
     <button data-m="fix">Fixed</button><button data-m="spin">2D spin</button><button data-m="tum">3D tumble</button>
@@ -714,8 +723,8 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
 setMode('spin');
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
-<script src="tools.js"></script>
-<script src ="Solver.js"></script>
-<script src = "Geoqa.js"></script>
+<script src="tool.js?v=2"></script>
+<script src="Solver.js?v=2"></script>
+<script src="Geoqa.js?v=2"></script>
 </body>
 </html>
