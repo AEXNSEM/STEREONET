@@ -97,6 +97,8 @@ button.s{padding:4px 8px;font-size:13px}
 <div class="card" id="blkCard">
   <div class="row" style="margin:0"><button class="p" id="blkBtn">Show 3D Block</button></div>
   <div id="blkWrap" hidden>
+    <div class="seg" id="blkMode" style="margin:8px 0 0"><button class="on" data-bm="single">Single Plane</button><button data-bm="struct">3D Structure View</button></div>
+    <div class="row" id="blkOvRow" style="display:none;margin:6px 0 0"><label>Structure</label><select id="blkOv" aria-label="Structure override"><option value="auto">Auto</option><option value="fold">Fold</option><option value="over">Overturned</option><option value="fault">Fault</option><option value="unc">Unconformity</option><option value="tilt">Tilted Strata</option></select></div>
     <canvas id="blk" style="aspect-ratio:4/3;margin-top:8px"></canvas>
     <div class="row" style="margin:6px 0 0"><label>View</label><input type="range" id="blkAz" min="0" max="359" value="35" aria-label="3D view azimuth"></div>
     <div class="mute" id="blkInfo" style="text-align:center;margin-top:4px"></div>
@@ -723,8 +725,8 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
 setMode('spin');
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
-<script src="tool.js?v=2"></script>
-<script src="Solver.js?v=2"></script>
-<script src="Geoqa.js?v=2"></script>
+<script src="tool.js?v=3"></script>
+<script src="Solver.js?v=3"></script>
+<script src="Geoqa.js?v=3"></script>
 </body>
 </html>
