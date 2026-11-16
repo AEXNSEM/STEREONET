@@ -53,6 +53,9 @@ button.s{padding:4px 8px;font-size:13px}
 .chip.on{background:var(--selbg);border-color:var(--acc)}
 .chip button{border:0;background:none;padding:4px 2px;font-size:14px}
 .stat{font-size:14px;margin:4px 0}
+#tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;display:flex;gap:4px;background:var(--bg);padding:6px 0;margin:0 0 8px}
+#tabs button{flex:1;padding:8px 2px;font-size:13px;font-weight:600;white-space:nowrap;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px}
+#tabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
 .mute{color:var(--mute);font-size:12px}
 #ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:20;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
 #ov .box{background:var(--card);border-radius:12px;padding:12px;max-width:560px;width:100%;max-height:100%;overflow:auto}
@@ -79,7 +82,7 @@ button.s{padding:4px 8px;font-size:13px}
 })();
 </script>
 
-<details class="card" open>
+<details class="card">
   <summary style="cursor:pointer;font-weight:600">Start here (3 steps)</summary>
   <ol style="margin:8px 0 0;padding-left:20px">
     <li><b>Enter your readings</b> in the box further down: strike, dip and the direction it dips (e.g. 048, 45, SE). Add a distance if you have one. No data yet? Tap “Load sample”.</li>
@@ -200,6 +203,29 @@ button.s{padding:4px 8px;font-size:13px}
 <div class="mute" style="text-align:center;margin:8px 0 20px">Stereonet by <b>Nsem</b> · © 2026 Nsem. All rights reserved.</div>
 </main>
 <div id="ov"></div>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)},m=document.querySelector('main'),cd=function(i){return $(i).closest('.card')};
+var sup=cd('list').nextElementSibling,bar=document.createElement('div'),P={};
+bar.id='tabs';
+[['p','Plot & 3D'],['d','Data (0)','tabData'],['i','Interpret'],['c','Calc & Q&A']].forEach(function(t,i){
+  var b=document.createElement('button');b.textContent=t[1];b.dataset.t=t[0];if(t[2])b.id=t[2];bar.appendChild(b);
+  var p=document.createElement('div');p.className='tpane';p.id='tab'+(i+1);m.insertBefore(p,sup);P[t[0]]=p;
+});
+m.insertBefore(bar,m.firstChild);
+[$('getapp'),m.querySelector('details.card'),cd('cv'),$('blkCard'),cd('modes'),cd('selinfo')].forEach(function(e){P.p.appendChild(e)});
+[cd('type'),cd('sets'),cd('list')].forEach(function(e){P.d.appendChild(e)});
+P.i.appendChild($('interp'));
+function go(k){
+  for(var x in P)P[x].hidden=x!==k;
+  [].forEach.call(bar.children,function(b){b.classList.toggle('on',b.dataset.t===k)});
+  window.scrollTo(0,0);
+  if(k==='p'&&window.draw)window.draw();
+}
+bar.onclick=function(e){var t=e.target.dataset&&e.target.dataset.t;if(t)go(t)};
+window.__tab=go;go('p');
+})();
+</script>
 
 <script>
 // home-screen icon (drawn at runtime)
@@ -324,7 +350,7 @@ function drawItem(d,i,a){
 }
 
 function draw(){
-  const W=cv.clientWidth,dpr=window.devicePixelRatio||1;
+const W=cv.clientWidth,dpr=window.devicePixelRatio||1;if(!W){renderUI();return}
   cv.width=W*dpr;cv.height=W*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
   ctx.clearRect(0,0,W,W);
   G={cx:W/2,cy:W/2,R:W/2-32};
@@ -402,7 +428,7 @@ function draw(){
   $('status').textContent=st.join(' · ');
   renderUI();
 }
-function renderUI(){
+function renderUI(){const tb=$('tabData');if(tb)tb.textContent='Data ('+data.length+')';
   const names=setNames();
   $('sets').innerHTML=names.length?names.map(nm=>{
     const n=data.filter(d=>d.s===nm).length;
@@ -725,8 +751,8 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
 setMode('spin');
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
-<script src="tool.js?v=3"></script>
-<script src="Solver.js?v=3"></script>
-<script src="Geoqa.js?v=3"></script>
+<script src="tool.js?v=4"></script>
+<script src="Solver.js?v=4"></script>
+<script src="Geoqa.js?v=4"></script>
 </body>
 </html>
