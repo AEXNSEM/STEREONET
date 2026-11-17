@@ -341,12 +341,11 @@ function classify(){
   const q=P.P.map(d=>({x:d.x,b:d.b,dd:mod(d.a+90)}));
   if(q.every(r=>isFinite(r.x)))q.sort((a,b)=>a.x-b.x);
   const jm=q.slice(1).map((r,i)=>Math.abs(r.b-q[i].b)),mj=jm.length?Math.max(...jm):0,sj=jm.slice().sort((a,b)=>a-b),mdn=sj.length?sj[sj.length>>1]:0;
- const jump=mj>=25&&(jm.length<3||mj>3*Math.max(mdn,3)),jf=jm.length?(jm.indexOf(mj)+.5)/jm.length:.5;
+  const jump=mj>=25&&(jm.length<3||mj>3*Math.max(mdn,3)),jf=jm.length?(jm.indexOf(mj)+.5)/jm.length:.5;
   const sn=q.reduce((s,r)=>s+Math.sin(r.dd*D),0),cn=q.reduce((s,r)=>s+Math.cos(r.dd*D),0),mdd=mod(Math.atan2(sn,cn)/D);
   const opp=q.filter(r=>Math.abs(((r.dd-mdd+540)%360)-180)>90).length,rev=P.mean>=8&&Math.min(opp,q.length-opp)/q.length>=.15;
   const auto=pair?'unc':rev?'fold':jump?'fault':(P.type==='girdle'&&P.mx>=50&&P.mx-P.mn>=15)?'over':P.type==='girdle'?'fold':'tilt';
   return{kind:ov==='auto'?auto:ov,P,S,pair,mj,mdd,jf};
-}
 }
 function STRUCT(X){
   const C=classify();if(!C)return null;
@@ -412,7 +411,7 @@ function STRUCT(X){
   }else{
     const pr=C.pair||(C.S.length>1?[C.S[0],C.S[1]]:[P,null]),oa=ori(pr[0]),ob=pr[1]?ori(pr[1]):{d:0,dd:0};
     let lo=oa,up=ob,lc=pr[0],uc=pr[1];if(ob.d>oa.d){lo=ob;up=oa;lc=pr[1];uc=pr[0]}
-    const cl=colorOf(lc.nm),cu=uc?colorOf(uc.nm):'#94a3b8',nl=nO(lo.d,lo.dd),nu=nO(up.d,up.dd);
+    const nl=nO(lo.d,lo.dd),nu=nO(up.d,up.dd);
     for(let j=-5;j<=5;j++)put(keep(pAt(nl,j*.3),nu,0,false),hc(j),.6,{e:OL,lw:1.2});
     for(let j=1;j<=5;j++)put(pAt(nu,j*.22),hc(j+1),.6,{e:OL,lw:1.2});
     put(pAt(nu,0),'#dc2626',.15,{e:'#dc2626',lw:2.6,dash:[8,4]});
