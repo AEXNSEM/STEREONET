@@ -430,7 +430,7 @@ sOut.before(sec);
 // ---------- "Start here" guide ----------
 const ol=x=>`<ol style="margin:4px 0 10px 20px;padding:0;line-height:1.5">${x.map(i=>`<li>${i}</li>`).join('')}</ol>`;
 const ex=(t)=>`<button class="s" data-ex="${esc(t)}" style="margin:2px 4px 2px 0">${esc(t)}</button>`;
-const guide=document.createElement('details');guide.id='gGuide';guide.open=true;
+const guide=document.createElement('details');guide.id='gGuide';
 guide.innerHTML=`<summary style="cursor:pointer;margin:6px 0;font-weight:700">Start here: how to use this card</summary>
 <div class="mute" style="margin:2px 0 6px">Pick the job you want to do. Follow the steps in order. You do not need to use every part.</div>
 <div><b>Job 1: Turn a plane into a pole</b></div>
@@ -451,7 +451,7 @@ $('gShow').onclick=()=>{const i=+$('gTopic').value,rel=rank(KB[i][1].toLowerCase
 $('gInterp').onclick=()=>{gSets();const nm=$('gSet').value;show(nm?interpHTML(nm):'<div class="mute">There are no plane measurements yet. Add some and try again.</div>')};
 function qa(code){
   if(code==='interp'){gSets();const nm=pickSet(($('sQ').value||'').toLowerCase());show(nm===undefined?'<div class="mute">There are no plane measurements yet.</div>':interpHTML(nm));return}
-  if(code==='plotres'){try{lastPlot.forEach(p=>data.push({k:p.k,a:p.a,b:p.b,s:'Solution'}));if(typeof save==='function')save();if(typeof draw==='function')draw();window.scrollTo({top:0,behavior:'smooth'})}catch(e){}return}
+  if(code==='plotres'){try{lastPlot.forEach(p=>data.push({k:p.k,a:p.a,b:p.b,s:'Solution'}));if(typeof save==='function')save();if(window.__tab)__tab('p');if(typeof draw==='function')draw();window.scrollTo({top:0,behavior:'smooth'})}catch(e){}return}
   if(code.indexOf('t:')===0){const i=+code.slice(2);show(entryHTML(i,rank(KB[i][1].toLowerCase()).filter(x=>x.i!==i).slice(0,3)))}
 }
 const FALLBACK='<div class="mute" style="margin-top:6px">I could not match that to a topic. Pick one from “Geology Q&amp;A and structural interpretation” below, or use key terms, for example: “significance of low and high dip”, “how to write a geological history”, “types of fault”, “economic importance of sandstone”.</div>';
@@ -461,7 +461,7 @@ document.addEventListener('click',e=>{
   const xe=e.target.closest?e.target.closest('[data-ex]'):null;
   if(xe){e.stopPropagation();$('sQ').value=xe.dataset.ex;$('sAsk').click();return}
   if(e.target.id==='sAsk'){const h=answer($('sQ').value,false);if(h){e.stopPropagation();e.preventDefault();show(h)}else setTimeout(()=>{if(/^I can solve:/.test(sOut.textContent)&&!/I could not match/.test(sOut.textContent))sOut.insertAdjacentHTML('beforeend',FALLBACK)},0)}
-  else if(e.target.id==='tAsk'){const q=$('tQ')&&$('tQ').value,h=q?answer(q,true):null;if(h){e.stopPropagation();e.stopImmediatePropagation();e.preventDefault();$('sQ').value=q;show(h);card.scrollIntoView({block:'start'})}}
+  else if(e.target.id==='tAsk'){const q=$('tQ')&&$('tQ').value,h=q?answer(q,true):null;if(h){e.stopPropagation();e.stopImmediatePropagation();e.preventDefault();if(window.__tab)__tab('c');$('sQ').value=q;show(h);card.scrollIntoView({block:'start'})}}
 },true);
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target&&e.target.id==='sQ'){const h=answer(e.target.value,false);if(h){e.stopPropagation();e.preventDefault();show(h)}}},true);
 })();
