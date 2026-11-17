@@ -198,7 +198,7 @@ c.innerHTML=`<h2 style="font-size:16px;margin:0 0 4px">Solve and geotechnical qu
 <div class="row"><select id="kSet" aria-label="Set"></select><input id="kSf" type="number" placeholder="slope dip" style="width:96px"><input id="kSd" type="number" placeholder="slope dip dir" style="width:110px"><input id="kPhi" type="number" placeholder="friction φ" style="width:100px"><input id="kLat" type="number" placeholder="lateral ±20" style="width:104px"></div>
 <div class="row"><button class="p" id="kGo">Analyse slope</button><label class="chk"><input type="checkbox" id="kOv" checked>Show slope and friction circle on net</label></div></details>
 <div id="sOut"></div>`;
-($('toolsCard')||$('interp')).after(c);
+$('tab4')?$('tab4').appendChild(c):($('toolsCard')||$('interp')).after(c);
 buildFields();
 function kSets(){const nm=[...new Set(data.map(d=>d.s))],k=$('kSet'),v=k.value;k.innerHTML=nm.map(n=>`<option>${esc(n)}</option>`).join('');if(nm.indexOf(v)>=0)k.value=v}
 kSets();c.addEventListener('pointerdown',kSets,true);
@@ -210,9 +210,9 @@ $('kGo').onclick=()=>{const sf=parseFloat($('kSf').value),sd=parseFloat($('kSd')
   kSets();out(showKin($('kSet').value,sf,mod(sd),ph,isFinite(la)?la:20))};
 const run=()=>{const r=ask($('sQ').value);out(r?r.h:`<div>${esc(CAP)}</div>`);return !!r};
 $('sAsk').onclick=run;$('sQ').addEventListener('keydown',e=>{if(e.key==='Enter')run()});
-c.addEventListener('click',e=>{if(e.target.dataset&&e.target.dataset.sv==='plot'){plotQ.forEach(p=>data.push({k:p.k,a:p.a,b:p.b,s:'Solution'}));save();draw();window.scrollTo({top:0,behavior:'smooth'})}});
+c.addEventListener('click',e=>{if(e.target.dataset&&e.target.dataset.sv==='plot'){plotQ.forEach(p=>data.push({k:p.k,a:p.a,b:p.b,s:'Solution'}));save();if(window.__tab)__tab('p');draw();save();draw();window.scrollTo({top:0,behavior:'smooth'})}});
 // send calculation-style questions from the existing "Ask about my data" box here
-const tAsk=$('tAsk');if(tAsk)tAsk.addEventListener('click',e=>{const q=$('tQ').value,r=ask(q);if(r){e.stopImmediatePropagation();$('sQ').value=q;out(r.h);c.scrollIntoView({block:'start'})}},true);
+const tAsk=$('tAsk');if(tAsk)tAsk.addEventListener('click',e=>{const q=$('tQ').value,r=ask(q);if(r){e.stopImmediatePropagation();if(window.__tab)__tab('c');$('sQ').value=q;out(r.h);c.scrollIntoView({block:'start'})}},true);
 // draw the slope face and friction circle on the net
 if(window.draw){const d0=window.draw;window.draw=function(){d0.apply(this,arguments);try{
   if(!OV||!$('kOv').checked)return;
