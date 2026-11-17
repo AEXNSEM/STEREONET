@@ -307,6 +307,8 @@ function activePlane(){
 }
 // ---------- Stage 1.5: auto-diagnostic structure view ----------
 let bm='single',ov='auto',manualAz=false,lastSig='';
+let showCall=false;
+
 const HP=['#0f766e','#d97706','#475569','#b45309'],cp=p=>[Math.max(-.85,Math.min(.85,p[0])),Math.max(-.85,Math.min(.85,p[1])),Math.max(-H*.8,Math.min(H*.8,p[2]))];
 function snapAz(){
   const sg=selItem+'|'+selSet+'|'+ov+'|'+JSON.stringify(hid)+'|'+JSON.stringify(data);
@@ -427,7 +429,7 @@ function STRUCT(X){
     Ln.forEach(l=>{const a=T(l[0]),b=T(l[1]);g.setLineDash(l[3]);g.strokeStyle=l[2];g.lineWidth=l[4];g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();g.setLineDash([])});
     A.forEach(a=>X.arrow(T(a[0]),T(a[1]),a[2],a[3]));
     g.font='700 11px system-ui';g.textAlign='center';g.textBaseline='middle';
-    Lb.forEach(l=>{const a=T(l.p),w=g.measureText(l.s).width+10,bb=X.bx,left=a[0]<(bb[0]+bb[1])/2,x=left?Math.max(w/2+2,bb[0]-14-w/2):Math.min(X.W-w/2-2,bb[1]+14+w/2),y=Math.max(10,Math.min(X.H-10,a[1]+l.dy));
+    if(showCall)Lb.forEach(l=>{const a=T(l.p),w=g.measureText(l.s).width+10,bb=X.bx,left=a[0]<(bb[0]+bb[1])/2,x=left?Math.max(w/2+2,bb[0]-14-w/2):Math.min(X.W-w/2-2,bb[1]+14+w/2),y=Math.max(10,Math.min(X.H-10,a[1]+l.dy));
       g.strokeStyle=l.c;g.fillStyle=l.c;g.lineWidth=1.2;g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(x,y);g.stroke();
       g.beginPath();g.arc(a[0],a[1],2.5,0,7);g.fill();
       g.globalAlpha=.93;g.fillStyle=X.card;g.fillRect(x-w/2,y-9,w,18);g.globalAlpha=1;
@@ -461,7 +463,8 @@ function render(){
   const nw=f=>-f.n[0]*sa+f.n[1]*ca;
   const act=activePlane();
   // back faces
-  FACES.filter(f=>nw(f)>0).forEach(f=>poly(f.v.map(T),fg,.07,fg,.8,[4,3]));
+    for(let k=-2;k<=2;k++){const q=k*.5;poly([[q,-2,-H],[q,2,-H]].map(T),null,0,'rgba(128,128,128,.35)',.7);poly([[-2,q,-H],[2,q,-H]].map(T),null,0,'rgba(128,128,128,.35)',.7)}
+  FACES.filter(f=>nw(f)>0).forEach(f=>poly(f.v.map(T),null,0,'#ffffff',.8,[4,3]));
    // plane
   let pc=null,sv,dv;
   const SV=bm==='struct'?STRUCT({T,poly,arrow,g,fg,card,sa,ca,W,H:Hc,bx:[ox+x0*sc,ox+x1*sc,oy-y1*sc,oy-y0*sc]}):null;
@@ -475,7 +478,7 @@ function render(){
     if(q.length>2)poly(q.map(T),pc,.6,pc,2.2);
   }
   // front faces + top
-  FACES.filter(f=>nw(f)<=0).forEach(f=>poly(f.v.map(T),fg,0,fg,1.4));
+  FACES.filter(f=>nw(f)<=0).forEach(f=>poly(f.v.map(T),null,0,'#ffffff',1.4));
   // north arrow on top surface
   arrow(T([-.72,-.72,H]),T([-.72,-.2,H]),'#dc2626',2.4);label('N',T([-.72,-.02,H]),'#dc2626');
   if(SV){SV.lab();$('blkInfo').textContent=SV.info}
@@ -496,6 +499,7 @@ $('blkBtn').onclick=()=>{
 $('blkAz').oninput=e=>{vaz=+e.target.value;manualAz=true;render()};
 $('blkMode').onclick=e=>{const m=e.target.dataset.bm;if(!m)return;bm=m;manualAz=false;lastSig='';document.querySelectorAll('#blkMode button').forEach(b=>b.classList.toggle('on',b.dataset.bm===m));$('blkOvRow').style.display=m==='struct'?'flex':'none';render()};
 $('blkOv').onchange=e=>{ov=e.target.value;render()};
+const lbT=document.createElement('button');lbT.className='s';lbT.textContent='Labels: off';lbT.onclick=()=>{showCall=!showCall;lbT.textContent='Labels: '+(showCall?'on':'off');render()};$('blkBtn').after(lbT);
 addEventListener('resize',render);
 // live sync: every add / select / delete / bake / sample already calls draw()
 const d0=window.draw;
