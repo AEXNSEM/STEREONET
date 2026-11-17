@@ -350,7 +350,7 @@ function classify(){
 }
 function STRUCT(X){
   const C=classify();if(!C)return null;
-  const T=X.T,g=X.g,poly=X.poly,items=[],A=[],Ln=[],Lb=[],K=C.kind,OL='#1e293b',hc=j=>HP[((j%4)+4)%4],pc=hc(0),prof=(F,n)=>{let q=null;for(let i=0;i<=n;i++){const s=F(i);if(q&&s){Ln.push([q[0],s[0],OL,[],1.2]);Ln.push([q[1],s[1],OL,[],1.2])}q=s}};
+  const T=X.T,g=X.g,poly=X.poly,items=[],A=[],Ln=[],Lb=[],P=C.P,K=C.kind,OL='#1e293b',hc=j=>HP[((j%4)+4)%4],pc=hc(0),prof=(F,n)=>{let q=null;for(let i=0;i<=n;i++){const s=F(i);if(q&&s){Ln.push([q[0],s[0],OL,[],1.2]);Ln.push([q[1],s[1],OL,[],1.2])}q=s}};
   const dsf=p=>p.reduce((s,v)=>s+(-v[0]*X.sa+v[1]*X.ca),0)/p.length;
   const put=(p,col,al,o)=>{p=inB(p);if(p.length>2)items.push(Object.assign({p,col,al,d:dsf(p)},o))};
   const lb=(s,p,dx,dy,c)=>Lb.push({s,p:cp(p),dx,dy,c:c||X.fg}),
