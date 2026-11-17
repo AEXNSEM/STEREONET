@@ -345,7 +345,8 @@ function classify(){
   const sn=q.reduce((s,r)=>s+Math.sin(r.dd*D),0),cn=q.reduce((s,r)=>s+Math.cos(r.dd*D),0),mdd=mod(Math.atan2(sn,cn)/D);
   const opp=q.filter(r=>Math.abs(((r.dd-mdd+540)%360)-180)>90).length,rev=P.mean>=8&&Math.min(opp,q.length-opp)/q.length>=.15;
   const auto=pair?'unc':rev?'fold':jump?'fault':(P.type==='girdle'&&P.mx>=50&&P.mx-P.mn>=15)?'over':P.type==='girdle'?'fold':'tilt';
-  return{kind:ov==='auto'?auto:ov,P,S,pair,mj,mdd};
+  return{kind:ov==='auto'?auto:ov,P,S,pair,mj,mdd,jf};
+}
 }
 function STRUCT(X){
   const C=classify();if(!C)return null;
@@ -396,7 +397,7 @@ function STRUCT(X){
     tick([...Array(61)].map((_,i)=>{const u=-1.9+i*.0633;return Pt(0,cs0(u),zs(u))}),Cc);lb('Bed 1',Pt(0,cs0(.5),zs(.5)-.4),50,40,hc(-1));lb('Bed 2',Pt(0,cs0(.5),zs(.5)+.4),50,-40,hc(1));
     det='axis '+pad(ax.t)+'/'+f0(ax.p)+' · dips '+f0(P.mn)+'°–'+f0(P.mx)+'° same direction';
   }else if(K==='fault'){
-    const o=ori(P),n=nO(o.d,o.dd),tb=tD(o.d,o.dd),fd=mod(o.dd+180),nf=nO(65,fd),tf=tD(65,fd),sv=[-Math.cos(fd*D),Math.sin(fd*D),0],Th=Math.min(.5,Math.max(.25,C.mj/90*.8));
+    const o=ori(P),n=nO(o.d,o.dd),tb=tD(o.d,o.dd),fd=mod(o.dd+180),nf=nO(65,fd),tf=tD(65,fd),sv=[-Math.cos(fd*D),Math.sin(fd*D),0],Th=Math.min(.6,Math.max(.12,C.mj/90*.9)),uh=[Math.sin(o.dd*D),Math.cos(o.dd*D),0],kf=(C.jf-.5)*1.6*dot(nf,uh),B0=mulv(nf,kf);
     for(let j=-5;j<=5;j++){
       put(keep(pAt(n,j*.3),nf,kf,false),hc(j),.6,{e:OL,lw:1.2});
       put(keep(pAt(n,j*.3-Th*n[2]),nf,kf,true),hc(j),.6,{e:OL,lw:1.2});
