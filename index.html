@@ -1,758 +1,503 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f766e">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Stereonet">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="author" content="Nsem">
-<link rel="manifest" href="manifest.webmanifest">
-<title>Free Web Stereonet – Plot Strike & Dip Online | Stereonet by Nsem</title>
-<meta name="description" content="Free web stereonet for structural geology. Works in your browser with no sign-up. Plot strike and dip, rotate in 2D and 3D, find fold axes, and install it as an app.">
-<link rel="canonical" href="https://aexnsem.github.io/STEREONET/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="Free Web Stereonet – Stereonet by Nsem">
-<meta property="og:description" content="Free, works in your browser, installable as an app.">
-<meta property="og:image" content="https://aexnsem.github.io/STEREONET/icon-512.png">
-<meta property="og:url" content="https://aexnsem.github.io/STEREONET/">
-<style>
-:root{--bg:#f6f7f9;--card:#fff;--fg:#1a1d23;--mute:#6b7280;--line:#d5d9e0;--grid:#c3c9d3;--acc:#0f766e;--selbg:#e6f4f1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111317;--card:#1b1e25;--fg:#e8eaee;--mute:#9aa1ad;--line:#2e333d;--grid:#3a404c;--acc:#2dd4bf;--selbg:#12302d;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#111317;--card:#1b1e25;--fg:#e8eaee;--mute:#9aa1ad;--line:#2e333d;--grid:#3a404c;--acc:#2dd4bf;--selbg:#12302d;color-scheme:dark}
-*{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
-main{max-width:640px;margin:0 auto;padding:12px}
-h1{font-size:18px;margin:4px 0 10px;display:flex;justify-content:space-between;align-items:center}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px}
-canvas{width:100%;aspect-ratio:1;display:block;user-select:none;-webkit-user-select:none}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:8px}
-label{font-size:13px;color:var(--mute)}
-select,input,textarea,button{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
-input[type=number]{width:78px}
-input[type=checkbox]{width:auto;accent-color:var(--acc)}
-input[type=range]{flex:1;min-width:120px;padding:0;accent-color:var(--acc)}
-textarea{width:100%;min-height:70px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
-button{cursor:pointer}
-button.p,.seg button.on{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600}
-button.s{padding:4px 8px;font-size:13px}
-.seg{display:flex;margin-bottom:10px}
-.seg button{flex:1;border-radius:0}
-.seg button:first-child{border-radius:8px 0 0 8px}
-.seg button:last-child{border-radius:0 8px 8px 0}
-.chk{display:flex;align-items:center;gap:6px;color:var(--fg);font-size:14px}
-.list{max-height:260px;overflow:auto;position:relative}
-.item{display:flex;justify-content:space-between;align-items:center;padding:6px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums;font-size:14px;cursor:pointer;border-radius:6px}
-.item.sel{background:var(--selbg);outline:2px solid var(--acc)}
-.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:middle}
-.chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:999px;padding:2px 8px;margin:0 6px 6px 0}
-.chip.on{background:var(--selbg);border-color:var(--acc)}
-.chip button{border:0;background:none;padding:4px 2px;font-size:14px}
-.stat{font-size:14px;margin:4px 0}
-#tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;display:flex;gap:4px;background:var(--bg);padding:6px 0;margin:0 0 8px}
-#tabs button{flex:1;padding:8px 2px;font-size:13px;font-weight:600;white-space:nowrap;background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:8px}
-#tabs button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
-.mute{color:var(--mute);font-size:12px}
-#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:20;align-items:center;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
-#ov .box{background:var(--card);border-radius:12px;padding:12px;max-width:560px;width:100%;max-height:100%;overflow:auto}
-#ov img{width:100%;display:block;border-radius:8px}
-</style>
-</head>
-<body>
-<main>
-<h1 style="display:block;font-size:20px">Free Web Stereonet <span class="mute">for structural geology</span></h1>
-<div class="mute" style="margin:-6px 0 10px">Created by <b>Nsem</b></div>
-
-<div class="card" id="getapp">
-  <p style="margin:0 0 8px"><b>100% free · works in your browser · no sign-up · no download needed.</b> Plot strike and dip, rotate the net in 2D or 3D, find fold axes, and get plain-language answers about folds, tilted beds and faults.</p>
-  <button class="p" id="installBtn" hidden>Install the app (free)</button>
-  <p class="mute" style="margin:8px 0 0"><b>Android (Chrome):</b> menu ⋮ → Install app. <b>iPhone (Safari):</b> Share → Add to Home Screen.</p>
-</div>
-<script>
+/* Stereonet by Nsem: "Ask about my data" toolkit. Loaded after the main script. */
 (function(){
-  var dp,b=document.getElementById('installBtn'),g=document.getElementById('getapp');
-  if(matchMedia('(display-mode: standalone)').matches||navigator.standalone){g.style.display='none';return}
-  addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e;b.hidden=false});
-  b.onclick=function(){if(dp){dp.prompt();dp=null;b.hidden=true}};
-  addEventListener('appinstalled',function(){g.style.display='none'});
-})();
-</script>
-
-<details class="card">
-  <summary style="cursor:pointer;font-weight:600">Start here (3 steps)</summary>
-  <ol style="margin:8px 0 0;padding-left:20px">
-    <li><b>Enter your readings</b> in the box further down: strike, dip and the direction it dips (e.g. 048, 45, SE). Add a distance if you have one. No data yet? Tap “Load sample”.</li>
-    <li><b>Look at the net.</b> Each curve is a layer and each dot is its pole. Tap any dot or curve to see its numbers and how to plot it by hand.</li>
-    <li><b>Scroll to “Interpret my data”</b> and tap Analyse. It answers the four lab questions three times (expert, standard, simple), with the evidence.</li>
-  </ol>
-</details>
-
-<div class="card">
-  <canvas id="cv"></canvas>
-  <div class="mute" id="hint" style="text-align:center;margin-top:6px"></div>
-  <div class="mute" id="status" style="text-align:center;color:#c026d3"></div>
-</div>
-
-<div class="card" id="blkCard">
-  <div class="row" style="margin:0"><button class="p" id="blkBtn">Show 3D Block</button></div>
-  <div id="blkWrap" hidden>
-    <div class="seg" id="blkMode" style="margin:8px 0 0"><button class="on" data-bm="single">Single Plane</button><button data-bm="struct">3D Structure View</button></div>
-    <div class="row" id="blkOvRow" style="display:none;margin:6px 0 0"><label>Structure</label><select id="blkOv" aria-label="Structure override"><option value="auto">Auto</option><option value="fold">Fold</option><option value="over">Overturned</option><option value="fault">Fault</option><option value="unc">Unconformity</option><option value="tilt">Tilted Strata</option></select></div>
-    <canvas id="blk" style="aspect-ratio:4/3;margin-top:8px"></canvas>
-    <div class="row" style="margin:6px 0 0"><label>View</label><input type="range" id="blkAz" min="0" max="359" value="35" aria-label="3D view azimuth"></div>
-    <div class="mute" id="blkInfo" style="text-align:center;margin-top:4px"></div>
-  </div>
-</div>
-  
-<div class="card">
-  <div class="seg" id="modes">
-    <button data-m="fix">Fixed</button><button data-m="spin">2D spin</button><button data-m="tum">3D tumble</button>
-  </div>
-  <div id="spinUI">
-    <div class="row">
-      <button class="s" id="rm">−15°</button>
-      <input type="range" id="rot" min="0" max="359" value="0">
-      <button class="s" id="rp">+15°</button>
-      <span id="rotv" style="min-width:36px">000°</span>
-    </div>
-  </div>
-  <div id="tumUI">
-    <div class="mute" style="margin-bottom:6px">Rotate data about an axis (clockwise looking down-plunge)</div>
-    <div class="row">
-      <input type="number" id="ax" placeholder="axis trend" inputmode="decimal" style="width:96px">
-      <input type="number" id="ap" placeholder="plunge" inputmode="decimal">
-      <input type="number" id="aw" placeholder="angle°" inputmode="decimal">
-      <button class="p" id="apply">Apply</button>
-    </div>
-    <div class="row">
-      <button class="s" id="undo">Undo</button>
-      <button class="s" id="bake">Bake rotation into data</button>
-    </div>
-  </div>
-  <div class="row" id="resetRow"><button class="s" id="reset">Reset view</button></div>
-  <div class="row">
-    <label>Net <select id="net"><option value="ea">Equal-area</option><option value="eq">Equal-angle</option></select></label>
-  </div>
-  <div class="row">
-    <label class="chk"><input type="checkbox" id="oGrid" checked>Grid</label>
-    <label class="chk"><input type="checkbox" id="oGC" checked>Great circles</label>
-    <label class="chk"><input type="checkbox" id="oPole" checked>Poles</label>
-    <label class="chk"><input type="checkbox" id="oLine" checked>Lines</label>
-    <label class="chk"><input type="checkbox" id="oNum" checked>Numbers</label>
-    <label class="chk"><input type="checkbox" id="oDen">Contour</label>
-    <label class="chk"><input type="checkbox" id="oMean" checked>Means</label>
-    <label class="chk"><input type="checkbox" id="oIso">Hide unselected</label>
-    <label class="chk"><input type="checkbox" id="oAna" checked>Show analysis</label>
-  </div>
-</div>
-
-<div class="card">
-  <div class="mute" style="margin-bottom:6px">Sets · tick to show/hide, tap name to highlight</div>
-  <div id="sets"></div>
-  <button class="s" id="delSel">Delete selection</button>
-  <button class="s" id="deselect">Deselect</button>
-</div>
-
-<div class="card">
-  <div class="row">
-    <select id="type">
-      <option value="sq">Plane: strike / dip / direction (048 45 SE)</option>
-      <option value="sd">Plane: strike / dip (RHR only)</option>
-      <option value="dd">Plane: dip dir / dip</option>
-      <option value="tp">Line: trend / plunge</option>
-    </select>
-    <input id="set" list="setlist" value="A" maxlength="10" style="width:84px" aria-label="Set name">
-    <datalist id="setlist"></datalist>
-  </div>
-  <div class="row">
-    <input type="number" id="a" placeholder="strike" inputmode="decimal" step="any">
-    <input type="number" id="b" placeholder="dip" inputmode="decimal" step="any">
-    <select id="c"><option value="">dir</option><option>N</option><option>NE</option><option>E</option><option>SE</option><option>S</option><option>SW</option><option>W</option><option>NW</option></select>
-    <input type="number" id="dist" placeholder="distance m (optional)" inputmode="decimal" step="any" style="width:150px">
-    <button class="p" id="add">Add</button>
-  </div>
-  <div class="mute" id="err" style="color:#dc2626"></div>
-  <details>
-    <summary class="mute" style="cursor:pointer;margin:6px 0">Bulk paste (one measurement per line, goes into the set above)</summary>
-    <textarea id="bulk" placeholder="048 45 SE&#10;048/45NW&#10;050, 40 SE"></textarea>
-    <div class="row" style="margin-top:6px"><button id="addBulk">Add all</button></div>
-  </details>
-  <div class="row" style="margin-top:6px">
-    <button id="sample">Load sample</button>
-    <button id="expImg">Export image</button>
-    <button id="expData">Export data</button>
-    <button id="clear">Clear all</button>
-  </div>
-</div>
-
-<div class="card" id="interp">
-  <h2 style="font-size:16px;margin:0 0 4px">Interpret my data</h2>
-  <div class="mute" style="margin-bottom:8px">Choose a set and tap Analyse. You get answers to the four lab questions at three levels (expert technical, standard technical, simple technical), charts, and evidence drawn on the net.</div>
-  <div class="row"><select id="isel"></select><button class="p" id="analyse">Analyse</button></div>
-  <div id="iout"></div>
-</div>
-
-<div class="card"><div class="stat" id="selinfo"></div><div class="stat" id="stats"></div><div class="mute" id="dmax"></div></div>
-
-<div class="card"><div class="list" id="list"></div></div>
-<div class="card" style="text-align:center"><b>Support Nsem</b><div class="mute" style="margin:4px 0 8px">Found this useful? Send a tip by Mobile Money.</div><div class="stat"><b>MoMo: 0534394878</b></div><div class="mute">Account name: Nigre Sey Ervin Maltre</div><div class="row" style="justify-content:center;margin:6px 0"><button class="s" onclick="try{navigator.clipboard.writeText('0534394878');this.textContent='Copied'}catch(e){}">Copy MoMo number</button></div><div class="mute">Contact: <a href="#" onclick="this.href='mailto:'+['nigreseyervin38','gmail.com'].join('@')" style="color:var(--acc);font-weight:600">Email Nsem</a></div></div>
-<div class="mute" style="text-align:center;margin:8px 0 20px">Stereonet by <b>Nsem</b> · © 2026 Nsem. All rights reserved.</div>
-</main>
-<div id="ov"></div>
-<script>
-(function(){
-var $=function(i){return document.getElementById(i)},m=document.querySelector('main'),cd=function(i){return $(i).closest('.card')};
-var sup=cd('list').nextElementSibling,bar=document.createElement('div'),P={};
-bar.id='tabs';
-[['p','Plot & 3D'],['d','Data (0)','tabData'],['i','Interpret'],['c','Calc & Q&A']].forEach(function(t,i){
-  var b=document.createElement('button');b.textContent=t[1];b.dataset.t=t[0];if(t[2])b.id=t[2];bar.appendChild(b);
-  var p=document.createElement('div');p.className='tpane';p.id='tab'+(i+1);m.insertBefore(p,sup);P[t[0]]=p;
-});
-m.insertBefore(bar,m.firstChild);
-[$('getapp'),m.querySelector('details.card'),cd('cv'),$('blkCard'),cd('modes'),cd('selinfo')].forEach(function(e){P.p.appendChild(e)});
-[cd('type'),cd('sets'),cd('list')].forEach(function(e){P.d.appendChild(e)});
-P.i.appendChild($('interp'));
-function go(k){
-  for(var x in P)P[x].hidden=x!==k;
-  [].forEach.call(bar.children,function(b){b.classList.toggle('on',b.dataset.t===k)});
-  window.scrollTo(0,0);
-  if(k==='p'&&window.draw)window.draw();
-}
-bar.onclick=function(e){var t=e.target.dataset&&e.target.dataset.t;if(t)go(t)};
-window.__tab=go;go('p');
-})();
-</script>
-
-<script>
-// home-screen icon (drawn at runtime)
-try{
-  const ic=document.createElement('canvas');ic.width=ic.height=180;
-  const g=ic.getContext('2d');
-  g.fillStyle='#0f766e';g.fillRect(0,0,180,180);
-  g.strokeStyle='#fff';g.fillStyle='#fff';g.lineWidth=7;
-  g.beginPath();g.arc(90,90,62,0,7);g.stroke();
-  g.lineWidth=4;
-  g.beginPath();g.moveTo(28,90);g.lineTo(152,90);g.moveTo(90,28);g.lineTo(90,152);g.stroke();
-  g.beginPath();g.ellipse(90,90,30,62,0,0,7);g.stroke();
-  g.beginPath();g.arc(116,64,7,0,7);g.fill();
-  const url=ic.toDataURL('image/png');
-  ['apple-touch-icon','icon'].forEach(rel=>{const l=document.createElement('link');l.rel=rel;l.href=url;document.head.appendChild(l)});
-}catch(e){}
-
-const $=id=>document.getElementById(id);
-const cv=$('cv'),ctx=cv.getContext('2d');
-const D=Math.PI/180,S2=Math.SQRT2;
-const PAL=['#0f9d8a','#2563eb','#e8590c','#c026d3','#ca8a04','#dc2626','#7c3aed','#0891b2'];
-const I3=()=>[[1,0,0],[0,1,0],[0,0,1]];
-let data=[],hid={},selItem=null,selSet=null,rot=0,M=I3(),hist=[],mode='spin';
-try{data=JSON.parse(localStorage.getItem('stereonet-data')||'[]')}catch(e){data=[]}
-data=data.map(d=>Object.assign({s:'A'},d));
-const save=()=>{ana=null;try{localStorage.setItem('stereonet-data',JSON.stringify(data))}catch(e){}};
-const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-const mod=a=>((a%360)+360)%360;
-const pad=n=>String(Math.round(n)%360).padStart(3,'0');
-const cmp=a=>['N','NE','E','SE','S','SW','W','NW'][Math.round(mod(a)/45)%8];
-const lab=d=>d.k==='l'?`${pad(d.a)} / ${Math.round(d.b)}°`:`${pad(d.o!==undefined?d.o:d.a)} / ${Math.round(d.b)}° ${d.q||cmp(d.a+90)}`;
-const setNames=()=>[...new Set(data.map(d=>d.s))];
-const colorOf=s=>PAL[setNames().indexOf(s)%PAL.length];
-
-// vectors: (east, north, down)
-const vec=(t,p)=>[Math.cos(p*D)*Math.sin(t*D),Math.cos(p*D)*Math.cos(t*D),Math.sin(p*D)];
-const poleVec=(s,d)=>vec(mod(s+270),90-d);
-const vecOf=d=>d.k==='p'?poleVec(d.a,d.b):vec(d.a,d.b);
-const mv=(A,v)=>A.map(r=>r[0]*v[0]+r[1]*v[1]+r[2]*v[2]);
-const mm=(A,B)=>A.map(r=>[0,1,2].map(j=>r[0]*B[0][j]+r[1]*B[1][j]+r[2]*B[2][j]));
-const Rz=a=>{const c=Math.cos(a*D),s=Math.sin(a*D);return[[c,s,0],[-s,c,0],[0,0,1]]};
-const isI=()=>M.every((r,i)=>r.every((x,j)=>Math.abs(x-(i===j?1:0))<1e-9));
-const down=v=>v[2]<0?v.map(c=>-c):v;
-const dvec=v=>down(mv(M,v));
-function Rax(t,p,w){
-  const a=vec(t,p),[x,y,z]=[a[0],a[1],-a[2]],c=Math.cos(w*D),s=Math.sin(w*D),k=1-c;
-  const R=[[c+x*x*k,x*y*k-z*s,x*z*k+y*s],[y*x*k+z*s,c+y*y*k,y*z*k-x*s],[z*x*k-y*s,z*y*k+x*s,c+z*z*k]];
-  const f=[1,1,-1];return R.map((r,i)=>r.map((e,j)=>e*f[i]*f[j]));
-}
-let G={cx:0,cy:0,R:0};
-function proj(v){ // net spin + projection (v already in net frame)
-  const c=Math.cos(rot*D),s=Math.sin(rot*D),e=v[0]*c+v[1]*s,n=v[1]*c-v[0]*s;
-  const th=Math.acos(Math.max(-1,Math.min(1,v[2]))),h=Math.hypot(e,n);
-  const r=G.R*($('net').value==='ea'?S2*Math.sin(th/2):Math.tan(th/2));
-  return h<1e-9?[G.cx,G.cy]:[G.cx+r*e/h,G.cy-r*n/h];
-}
-const dproj=v=>proj(dvec(v));
-function unproj(x,y){ // returns vector in data-rotated frame (after M)
-  const X=(x-G.cx)/G.R,Y=-(y-G.cy)/G.R,rho=Math.hypot(X,Y);
-  if(rho>1)return null;
-  const th=$('net').value==='ea'?2*Math.asin(Math.min(1,rho/S2)):2*Math.atan(rho);
-  const v=rho<1e-9?[0,0,1]:[Math.sin(th)*X/rho,Math.sin(th)*Y/rho,Math.cos(th)];
-  return mv(Rz(-rot),v);
-}
-function planePts(s,d,n=90){ // untransformed grid-style great circle
-  const sv=[Math.sin(s*D),Math.cos(s*D),0],dd=s+90;
-  const dv=[Math.sin(dd*D)*Math.cos(d*D),Math.cos(dd*D)*Math.cos(d*D),Math.sin(d*D)];
-  const pts=[];
-  for(let i=0;i<=n;i++){const b=Math.PI*i/n;pts.push(proj(sv.map((c,k)=>Math.cos(b)*c+Math.sin(b)*dv[k])))}
-  return pts;
-}
-function planeSegs(s,d,Mx=M,n=180){ // great circle after 3D rotation, split at the primitive
-  const sv=[Math.sin(s*D),Math.cos(s*D),0],dd=s+90;
-  const dv=[Math.sin(dd*D)*Math.cos(d*D),Math.cos(dd*D)*Math.cos(d*D),Math.sin(d*D)];
-  const segs=[];let cur=null,prev=null;
-  for(let i=0;i<=n;i++){
-    const b=2*Math.PI*i/n,r=mv(Mx,sv.map((c,k)=>Math.cos(b)*c+Math.sin(b)*dv[k]));
-    if(prev&&(prev[2]>=0)!==(r[2]>=0)){
-      const t=prev[2]/(prev[2]-r[2]),x=prev.map((c,k)=>c+t*(r[k]-c)),h=Math.hypot(x[0],x[1])||1,e=proj([x[0]/h,x[1]/h,0]);
-      if(cur){cur.push(e);segs.push(cur);cur=null}else cur=[e];
-    }
-    if(r[2]>=0){(cur=cur||[]).push(proj(r))}
-    prev=r;
-  }
-  if(cur)segs.push(cur);
-  return segs;
-}
-const stroke=pts=>{ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.stroke()};
-function principal(vs){
-  if(!vs.length)return null;
-  const T=[[0,0,0],[0,0,0],[0,0,0]];
-  vs.forEach(v=>{for(let i=0;i<3;i++)for(let j=0;j<3;j++)T[i][j]+=v[i]*v[j]});
-  let u=[vs[0][0]+.01,vs[0][1]+.02,vs[0][2]+.03];
-  for(let k=0;k<100;k++){const w=T.map(r=>r[0]*u[0]+r[1]*u[1]+r[2]*u[2]),n=Math.hypot(...w)||1;u=w.map(c=>c/n)}
-  return u[2]<0?u.map(c=>-c):u;
-}
-const toTP=u=>({t:mod(Math.atan2(u[0],u[1])/D),p:Math.asin(Math.max(-1,Math.min(1,u[2])))/D});
-const isAct=(d,i)=>selItem!==null?i===selItem:(selSet===null||d.s===selSet);
-const markerPt=d=>d.k==='l'?dproj(vec(d.a,d.b)):($('oPole').checked?dproj(poleVec(d.a,d.b)):dproj(vec(d.a+90,d.b)));
-
-function drawItem(d,i,a){
-  const c=colorOf(d.s),sel=i===selItem,fg=css('--fg');
-  ctx.globalAlpha=a?1:.2;ctx.strokeStyle=c;ctx.fillStyle=c;
-  let show=false;
-  if(d.k==='p'){
-    if($('oGC').checked){ctx.lineWidth=sel?4:1.6;planeSegs(d.a,d.b).forEach(stroke);show=true}
-    if($('oPole').checked){const p=dproj(poleVec(d.a,d.b));ctx.beginPath();ctx.arc(p[0],p[1],sel?6:3.8,0,7);ctx.fill();show=true}
-  }else if($('oLine').checked){
-    const p=dproj(vec(d.a,d.b)),k=sel?1.5:1;
-    ctx.beginPath();ctx.moveTo(p[0],p[1]-5.5*k);ctx.lineTo(p[0]+5*k,p[1]+4*k);ctx.lineTo(p[0]-5*k,p[1]+4*k);ctx.closePath();ctx.fill();show=true;
-  }
-  if(show){
-    const m=markerPt(d);
-    if(sel){ctx.strokeStyle=fg;ctx.lineWidth=2;ctx.beginPath();ctx.arc(m[0],m[1],11,0,7);ctx.stroke()}
-    if($('oNum').checked){
-      ctx.font='700 11px system-ui';ctx.textAlign='left';ctx.textBaseline='alphabetic';
-      ctx.lineWidth=3;ctx.strokeStyle=css('--card');ctx.strokeText(i+1,m[0]+7,m[1]-6);
-      ctx.fillStyle=a?fg:c;ctx.fillText(i+1,m[0]+7,m[1]-6);
-    }
-  }
-  ctx.globalAlpha=1;
-}
-
-function draw(){
-const W=cv.clientWidth,dpr=window.devicePixelRatio||1;if(!W){renderUI();return}
-  cv.width=W*dpr;cv.height=W*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
-  ctx.clearRect(0,0,W,W);
-  G={cx:W/2,cy:W/2,R:W/2-32};
-  const {cx,cy,R}=G,fg=css('--fg'),grid=css('--grid'),mute=css('--mute');
-  const iso=$('oIso').checked;
-  const items=data.map((d,i)=>({d,i})).filter(o=>!hid[o.d.s]&&(!iso||isAct(o.d,o.i)));
-  // density
-  let dmax=0;
-  const dv=items.filter(o=>selSet===null||o.d.s===selSet).map(o=>mv(M,vecOf(o.d)));
-  if($('oDen').checked&&dv.length){
-    const ca=Math.cos(8.1*D),step=4,cells=[];
-    for(let x=cx-R;x<=cx+R;x+=step)for(let y=cy-R;y<=cy+R;y+=step){
-      const v=unproj(x+step/2,y+step/2);if(!v)continue;
-      let c=0;for(const q of dv)if(Math.abs(q[0]*v[0]+q[1]*v[1]+q[2]*v[2])>=ca)c++;
-      if(c){const pct=c/dv.length*100;dmax=Math.max(dmax,pct);cells.push([x,y,pct])}
-    }
-    ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.clip();
-    cells.forEach(([x,y,p])=>{const t=p/dmax;ctx.fillStyle=`hsla(${210-210*t},85%,55%,${.18+.4*t})`;ctx.fillRect(x,y,step,step)});
-    ctx.restore();
-  }
-  // grid
-  if($('oGrid').checked){
-    ctx.lineWidth=.6;ctx.strokeStyle=grid;
-    for(let d=10;d<=80;d+=10)for(const sg of[1,-1]){
-      const pts=[];for(let i=0;i<=90;i++){const b=Math.PI*i/90;pts.push(proj([sg*Math.sin(b)*Math.cos(d*D),Math.cos(b),Math.sin(b)*Math.sin(d*D)]))}
-      stroke(pts);
-    }
-    for(let f=10;f<=170;f+=10){
-      const pts=[];for(let i=0;i<=90;i++){const s=Math.PI*i/90;pts.push(proj([Math.sin(f*D)*Math.cos(s),Math.cos(f*D),Math.sin(f*D)*Math.sin(s)]))}
-      stroke(pts);
-    }
-  }
-  ctx.strokeStyle=mute;ctx.lineWidth=1;
-  stroke([proj(vec(0,0)),proj(vec(180,0))]);stroke([proj(vec(90,0)),proj(vec(270,0))]);
-  // ring, ticks, cardinals
-  ctx.strokeStyle=fg;ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(cx,cy,R,0,7);ctx.stroke();
-  ctx.textAlign='center';ctx.textBaseline='middle';
-  for(let a=0;a<360;a+=10){
-    const card=a%90===0,len=card?12:(a%30===0?8:4),s=Math.sin((a+rot)*D),c=Math.cos((a+rot)*D);
-    ctx.strokeStyle=card&&a===0?'#dc2626':fg;ctx.lineWidth=card?2.4:1;
-    ctx.beginPath();ctx.moveTo(cx+R*s,cy-R*c);ctx.lineTo(cx+(R+len)*s,cy-(R+len)*c);ctx.stroke();
-    if(a%30===0&&!card){ctx.fillStyle=mute;ctx.font='10px system-ui';ctx.fillText(a,cx+(R+19)*s,cy-(R+19)*c)}
-    if(card){ctx.fillStyle=a===0?'#dc2626':fg;ctx.font='700 17px system-ui';ctx.fillText('NESW'[a/90],cx+(R+20)*s,cy-(R+20)*c)}
-  }
-  items.filter(o=>!isAct(o.d,o.i)).forEach(o=>drawItem(o.d,o.i,false));
-  items.filter(o=>isAct(o.d,o.i)).forEach(o=>drawItem(o.d,o.i,true));
-  drawAna(fg);
-  // per-set means + stats
-  let h='';
-  setNames().forEach(nm=>{
-    if(hid[nm])return;
-    const pv=data.filter(d=>d.s===nm&&d.k==='p').map(d=>mv(M,poleVec(d.a,d.b)));
-    const lv=data.filter(d=>d.s===nm&&d.k==='l').map(d=>mv(M,vec(d.a,d.b)));
-    const mp=principal(pv),ml=principal(lv),c=colorOf(nm),parts=[];
-    const fk=(vs,u)=>{if(vs.length<3)return '';const sm=[0,0,0];vs.forEach(v=>{const g=v[0]*u[0]+v[1]*u[1]+v[2]*u[2]<0?-1:1;for(let i=0;i<3;i++)sm[i]+=g*v[i]});const r=Math.hypot(...sm);return r>vs.length-1e-6?' k=∞':` k=${((vs.length-1)/(vs.length-r)).toFixed(1)}`};
-    if(mp){const t=toTP(mp);parts.push(`${pv.length} planes, mean ${pad(mod(t.t+90))}/${Math.round(90-t.p)}${cmp(t.t+180)}${fk(pv,mp)}`)}
-    if(ml){const t=toTP(ml);parts.push(`${lv.length} lines, mean ${pad(t.t)}/${Math.round(t.p)}${fk(lv,ml)}`)}
-    h+=`<div class="stat"><span class="dot" style="background:${c}"></span><b>${nm}</b> · ${parts.join(' · ')}</div>`;
-    if($('oMean').checked&&selItem===null&&(selSet===null||selSet===nm)){
-      ctx.strokeStyle=c;ctx.lineWidth=3;
-      if(mp&&pv.length>1){const t=toTP(mp);ctx.setLineDash([7,4]);planeSegs(mod(t.t+90),90-t.p,I3()).forEach(stroke);ctx.setLineDash([]);const p=proj(mp);ctx.lineWidth=2.5;ctx.strokeStyle=fg;ctx.beginPath();ctx.arc(p[0],p[1],7,0,7);ctx.stroke()}
-      if(ml&&lv.length>1){const p=proj(ml);ctx.lineWidth=2.5;ctx.strokeStyle=fg;ctx.strokeRect(p[0]-6,p[1]-6,12,12)}
-    }
-  });
-  $('stats').innerHTML=h||'<span class="mute">No data yet.</span>';
-  $('dmax').textContent=dmax?`Peak density ≈ ${dmax.toFixed(1)}% per 1% area`:'';
-  // selection info
-  const sd=selItem!==null?data[selItem]:null;
-  if(sd){
-    const t=toTP(dvec(vecOf(sd)));
-    $('selinfo').innerHTML=(sd.k==='p'?`<b>#${selItem+1}</b> plane ${pad(t.t+90)}/${Math.round(90-t.p)} ${cmp(t.t+180)} · pole ${pad(t.t)}/${Math.round(t.p)}`:`<b>#${selItem+1}</b> line ${pad(t.t)}/${Math.round(t.p)}`)+(sd.k==='p'?`<details style='margin-top:4px'><summary class='mute' style='cursor:pointer'>How to plot this by hand</summary><ol class='mute' style='padding-left:18px;margin:4px 0'><li>On the tracing sheet mark N at the top and label E, S, W.</li><li>Find ${pad(sd.a)}° on the rim and make a small tick there.</li><li>Rotate the sheet until that tick sits at N. The layer now dips to the right (east).</li><li>On the E–W line count ${Math.round(sd.b)}° from the rim (0°) towards the centre (90°) and mark the point.</li><li>Trace the net curve through that point, joining the N and S ends.</li><li>Rotate the sheet back so N is up and label it ${lab(sd)}.</li></ol></details>`:'');
-  }else $('selinfo').innerHTML='';
-  $('rot').value=Math.round(rot)%360;$('rotv').textContent=pad(rot)+'°';
-  const st=[];if(rot)st.push(`net spun ${pad(rot)}°`);if(!isI())st.push('data rotated in 3D (net is not geographic)');
-  $('status').textContent=st.join(' · ');
-  renderUI();
-}
-function renderUI(){const tb=$('tabData');if(tb)tb.textContent='Data ('+data.length+')';
-  const names=setNames();
-  $('sets').innerHTML=names.length?names.map(nm=>{
-    const n=data.filter(d=>d.s===nm).length;
-    return `<span class="chip${selSet===nm?' on':''}"><input type="checkbox" data-v="${nm}" ${hid[nm]?'':'checked'} aria-label="Show ${nm}"><span class="dot" style="background:${colorOf(nm)};margin:0"></span><button data-s="${nm}">${nm} (${n})</button></span>`}).join(''):'<span class="mute">No sets yet.</span>';
-  $('setlist').innerHTML=names.map(n=>`<option value="${n}">`).join('');
-  const cur=$('isel').value;$('isel').innerHTML=names.map(n=>`<option>${n}</option>`).join('');if(names.includes(cur))$('isel').value=cur;
-  $('list').innerHTML=data.length?data.map((d,i)=>
-    `<div class="item${i===selItem?' sel':''}" data-i="${i}"><span><span class="dot" style="background:${colorOf(d.s)}"></span>#${i+1} ${d.k==='p'?'Plane':'Line'} ${lab(d)} <span class="mute">${d.s}</span></span><button class="s" data-del="${i}" aria-label="Delete">✕</button></div>`).join('')
-    :'<div class="mute">Add measurements above.</div>';
-}
-
-// pointer interaction
-const pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
-const ang=p=>Math.atan2(p.x-G.cx,-(p.y-G.cy))/D;
-const n180=a=>((a+540)%360)-180;
-let drag=null;
-cv.onpointerdown=e=>{const p=pos(e);drag={lx:e.clientX,ly:e.clientY,x0:e.clientX,y0:e.clientY,a0:ang(p),pa:ang(p),r0:rot,moved:false,twist:Math.hypot(p.x-G.cx,p.y-G.cy)>.82*G.R};cv.setPointerCapture(e.pointerId)};
-cv.onpointermove=e=>{
-  if(!drag)return;
-  if(!drag.moved&&Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)>6){drag.moved=true;if(mode==='tum')pushHist()}
-  if(!drag.moved)return;
-  const p=pos(e);
-  if(mode==='spin'){rot=mod(drag.r0+n180(ang(p)-drag.a0));draw()}
-  else if(mode==='tum'){
-    let inc;
-    if(drag.twist){inc=Rz(n180(ang(p)-drag.pa));drag.pa=ang(p)}
-    else{
-      const th=(e.clientX-drag.lx)/G.R,ph=(e.clientY-drag.ly)/G.R,c=Math.cos(th),s=Math.sin(th),c2=Math.cos(ph),s2=Math.sin(ph);
-      inc=mm([[1,0,0],[0,c2,s2],[0,-s2,c2]],[[c,0,-s],[0,1,0],[s,0,c]]);
-    }
-    drag.lx=e.clientX;drag.ly=e.clientY;
-    M=mm(Rz(-rot),mm(inc,mm(Rz(rot),M)));
-    draw();
-  }
-};
-cv.onpointerup=e=>{if(drag&&!drag.moved)tap(pos(e));drag=null};
-cv.onpointercancel=()=>{drag=null};
-function tap(p){
-  const dist=q=>Math.hypot(q[0]-p.x,q[1]-p.y);
-  let best=null,bd=20;
-  data.forEach((d,i)=>{
-    if(hid[d.s]||($('oIso').checked&&!isAct(d,i)))return;
-    let md=1e9;
-    if(d.k==='p'){
-      if($('oPole').checked)md=dist(dproj(poleVec(d.a,d.b)));
-      if($('oGC').checked)planeSegs(d.a,d.b,M,90).forEach(sg=>sg.forEach(q=>md=Math.min(md,dist(q)+6)));
-    }else if($('oLine').checked)md=dist(dproj(vec(d.a,d.b)));
-    if(md<bd){bd=md;best=i}
-  });
-  selItem=best;selSet=null;
-  draw();
-  const el=$('list').querySelector('.sel');if(el)$('list').scrollTop=el.offsetTop-80;
-}
-const pushHist=()=>{hist.push(M.map(r=>r.slice()));if(hist.length>50)hist.shift()};
-
-// modes and rotation controls
-function setMode(m){
-  mode=m;
-  if(m==='fix'){rot=0;M=I3();hist=[]}
-  document.querySelectorAll('#modes button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
-  $('spinUI').style.display=m==='spin'?'block':'none';
-  $('tumUI').style.display=m==='tum'?'block':'none';
-  $('resetRow').style.display=m==='fix'?'none':'flex';
-  cv.style.touchAction=m==='fix'?'auto':'none';
-  $('hint').textContent={fix:'Tap a point or curve to select',spin:'Drag to spin the net · tap to select',tum:'Drag to tumble in 3D · drag the outer ring to twist · tap to select'}[m];
-  draw();
-}
-$('modes').onclick=e=>{if(e.target.dataset.m)setMode(e.target.dataset.m)};
-$('rot').oninput=e=>{rot=mod(+e.target.value);draw()};
-$('rm').onclick=()=>{rot=mod(rot-15);draw()};
-$('rp').onclick=()=>{rot=mod(rot+15);draw()};
-$('reset').onclick=()=>{rot=0;M=I3();hist=[];draw()};
-$('undo').onclick=()=>{if(hist.length){M=hist.pop();draw()}};
-$('apply').onclick=()=>{
-  const t=parseFloat($('ax').value),p=parseFloat($('ap').value),w=parseFloat($('aw').value);
-  if(![t,p,w].every(isFinite)||p<0||p>90)return;
-  pushHist();M=mm(Rax(t,p,w),M);draw();
-};
-$('bake').onclick=()=>{
-  if(isI())return;
-  data=data.map(d=>{const t=toTP(dvec(vecOf(d)));return d.k==='p'?{k:'p',a:mod(t.t+90),b:90-t.p,s:d.s}:{k:'l',a:t.t,b:t.p,s:d.s}});
-  M=I3();hist=[];save();draw();
-};
-
-// lists / sets
-$('list').onclick=e=>{
-  const del=e.target.closest('[data-del]');
-  if(del){data.splice(+del.dataset.del,1);selItem=null;save();draw();return}
-  const it=e.target.closest('.item');
-  if(it){const i=+it.dataset.i;selItem=selItem===i?null:i;selSet=null;draw()}
-};
-$('sets').onclick=e=>{
-  const v=e.target.dataset.v,s=e.target.dataset.s;
-  if(v!==undefined){hid[v]=!e.target.checked;draw()}
-  else if(s!==undefined){selSet=selSet===s?null:s;selItem=null;draw()}
-};
-$('deselect').onclick=()=>{selItem=null;selSet=null;draw()};
-$('delSel').onclick=()=>{
-  if(selItem!==null)data.splice(selItem,1);
-  else if(selSet!==null)data=data.filter(d=>d.s!==selSet);
-  selItem=null;selSet=null;save();draw();
-};
-
-// data entry
-const labels={sq:['strike','dip'],sd:['strike','dip'],dd:['dip dir','dip'],tp:['trend','plunge']};
-$('type').onchange=()=>{const t=$('type').value,l=labels[t];$('a').placeholder=l[0];$('b').placeholder=l[1];$('c').style.display=t==='sq'?'':'none'};
-function add(a,b,type,q){
-  if(!isFinite(a)||!isFinite(b))return 'Enter two numbers.';
-  if(b<0||b>90)return type==='tp'?'Plunge must be 0–90°.':'Dip must be 0–90°.';
-  a=mod(a);const s=$('set').value.trim()||'A';delete hid[s];
-  if(type==='tp'){data.push({k:'l',a,b,s});return ''}
-  if(type==='dd'){data.push({k:'p',a:mod(a-90),b,s});return ''}
-  if(type==='sd'){data.push({k:'p',a,b,s});return ''}
-  q=(q||'').toUpperCase();
-  const az={N:0,NE:45,E:90,SE:135,S:180,SW:225,W:270,NW:315}[q];
-  if(az===undefined)return 'Pick a dip direction (N, NE, E, SE…).';
-  const diff=x=>Math.abs(((x-az+540)%360)-180);
-  data.push({k:'p',a:diff(mod(a+90))<=diff(mod(a-90))?a:mod(a+180),b,o:a,q,s});return '';
-}
-$('add').onclick=()=>{
-  const e=add(parseFloat($('a').value),parseFloat($('b').value),$('type').value,$('c').value);
-  $('err').textContent=e;if(e)return;
-  const dv=parseFloat($('dist').value);if(isFinite(dv))data[data.length-1].x=dv;
-  $('a').value='';$('b').value='';$('dist').value='';$('a').focus();save();draw();
-};
-$('addBulk').onclick=()=>{
-  let bad=0;
-  $('bulk').value.split(/\n/).forEach(l=>{
-    if(!l.trim())return;
-    const m=l.match(/([\d.]+)\D+?([\d.]+)\s*([NSEW]{1,2})?/i),n=l.trim().split(/[\s,;\t\/]+/).map(parseFloat),t=$('type').value;
-    if(t==='sq'){if(add(m?parseFloat(m[1]):NaN,m?parseFloat(m[2]):NaN,t,m&&m[3]))bad++}
-    else if(add(n[0],n[1],t))bad++;
-  });
-  $('err').textContent=bad?`${bad} line(s) skipped.`:'';
-  $('bulk').value='';save();draw();
-};
-$('clear').onclick=()=>{data=[];hid={};selItem=null;selSet=null;save();draw()};
-$('sample').onclick=()=>{
-  let s=7;const r=()=>{s=(s*16807)%2147483647;return s/2147483647};
-  const g=()=>(r()+r()+r()+r()-2)*1.7,cl=x=>Math.min(89,Math.max(1,x));
-  data=[];hid={};selItem=null;selSet=null;
-  for(let i=0;i<14;i++){const sg=45*(i-6.5)/6.5+g()*1.5;data.push({k:'p',a:mod((sg>=0?0:180)+g()*1.5),b:cl(Math.abs(sg)+1),s:'Fold',x:i*20})}
-  for(let i=0;i<6;i++)data.push({k:'p',a:mod(45+g()),b:cl(40+g()),s:'Tilted',x:i*15});
-  
-  
-  save();draw();
-};
-
-// ---- interpretation helper ----
-let ana=null,lastText='';
+'use strict';
+const D=Math.PI/180,f0=Math.round,mod=a=>((a%360)+360)%360,pad=n=>String(Math.round(n)%360).padStart(3,'0');
 const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
-const f0=x=>Math.round(x);
+const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const nrm=v=>{const m=Math.hypot(v[0],v[1],v[2])||1;return v.map(c=>c/m)};
+const vec=(t,p)=>[Math.cos(p*D)*Math.sin(t*D),Math.cos(p*D)*Math.cos(t*D),Math.sin(p*D)];
+const pole=(s,d)=>vec(mod(s+270),90-d);
+const dn=v=>v[2]<0?v.map(c=>-c):v;
+const tp=v=>{v=dn(v);return{t:mod(Math.atan2(v[0],v[1])/D),p:Math.asin(Math.max(-1,Math.min(1,v[2])))/D}};
+const cmp=a=>['N','NE','E','SE','S','SW','W','NW'][Math.round(mod(a)/45)%8];
+const ang=(a,b)=>Math.acos(Math.max(-1,Math.min(1,dot(a,b))))/D;
+const aax=(a,b)=>{const x=ang(a,b);return Math.min(x,180-x)};
+const fl=v=>{const q=tp(v);return pad(q.t)+'/'+f0(q.p)};
+const fp=w=>{const q=tp(w);return pad(q.t+90)+'/'+f0(90-q.p)+' '+cmp(q.t+180)};
+const avg=a=>a.reduce((s,x)=>s+x,0)/a.length;
+const sdv=a=>Math.sqrt(avg(a.map(x=>(x-avg(a))**2)));
+const med=a=>{const b=[...a].sort((x,y)=>x-y),h=b.length>>1;return b.length%2?b[h]:(b[h-1]+b[h])/2};
+const fin=k=>isFinite(k)?k.toFixed(1):'∞';
 const esc=s=>String(s).split('&').join('&amp;').split('<').join('&lt;').split('>').join('&gt;');
-function eig3(vs){
+const mv=(A,v)=>A.map(r=>dot(r,v));
+const mmul=(A,B)=>A.map(r=>[0,1,2].map(j=>r[0]*B[0][j]+r[1]*B[1][j]+r[2]*B[2][j]));
+function rax(t,p,w){
+  const a=vec(t,p),x=a[0],y=a[1],z=-a[2],c=Math.cos(w*D),s=Math.sin(w*D),k=1-c,f=[1,1,-1];
+  const R=[[c+x*x*k,x*y*k-z*s,x*z*k+y*s],[y*x*k+z*s,c+y*y*k,y*z*k-x*s],[z*x*k-y*s,z*y*k+x*s,c+z*z*k]];
+  return R.map((r,i)=>r.map((e,j)=>e*f[i]*f[j]));
+}
+function eig(vs){
   const n=vs.length,T=[[0,0,0],[0,0,0],[0,0,0]];
   vs.forEach(v=>{for(let i=0;i<3;i++)for(let j=0;j<3;j++)T[i][j]+=v[i]*v[j]/n});
-  const pw=(A,u)=>{for(let k=0;k<200;k++){const w=A.map(r=>dot(r,u)),m=Math.hypot(...w)||1;u=w.map(c=>c/m)}return[dot(A.map(r=>dot(r,u)),u),u]};
-  const [l1,u1]=pw(T,[.57,.58,.59]);
+  const pw=(A,u)=>{for(let k=0;k<200;k++){const w=A.map(r=>dot(r,u)),m=Math.hypot(w[0],w[1],w[2])||1;u=w.map(c=>c/m)}return[dot(A.map(r=>dot(r,u)),u),u]};
+  const r1=pw(T,[.57,.58,.59]),l1=r1[0],u1=r1[1];
   const T2=T.map((r,i)=>r.map((x,j)=>x-l1*u1[i]*u1[j]));
   let s=[.3,-.8,.5];const d=dot(s,u1);s=s.map((c,i)=>c-d*u1[i]);
-  const [l2,u2]=pw(T2,s);
-  const u3=[u1[1]*u2[2]-u1[2]*u2[1],u1[2]*u2[0]-u1[0]*u2[2],u1[0]*u2[1]-u1[1]*u2[0]];
-  return{S:[Math.max(l1,1e-6),Math.max(l2,1e-6),Math.max(1-l1-l2,1e-6)],u:[u1,u2,u3]};
+  const r2=pw(T2,s),l2=r2[0],u2=r2[1];
+  return{S:[Math.max(l1,1e-6),Math.max(l2,1e-6),Math.max(1-l1-l2,1e-6)],u:[u1,u2,cross(u1,u2)]};
 }
-function drawAna(fg){
-  if(!ana||!$('oAna').checked)return;
-  ctx.save();ctx.strokeStyle=fg;ctx.lineWidth=2;ctx.setLineDash([3,4]);
-  planeSegs(ana.gs,ana.gd).forEach(stroke);
-  ctx.setLineDash([]);
-  const p=dproj(ana.pt);
-  ctx.fillStyle='#facc15';ctx.strokeStyle=fg;ctx.lineWidth=2;
-  ctx.beginPath();ctx.moveTo(p[0],p[1]-9);ctx.lineTo(p[0]+9,p[1]);ctx.lineTo(p[0],p[1]+9);ctx.lineTo(p[0]-9,p[1]);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.font='700 11px system-ui';ctx.textAlign='left';ctx.textBaseline='alphabetic';
-  ctx.lineWidth=3;ctx.strokeStyle=css('--card');ctx.strokeText(ana.label,p[0]+12,p[1]+4);
-  ctx.fillStyle=fg;ctx.fillText(ana.label,p[0]+12,p[1]+4);
-  ctx.restore();
-}
-const plung=p=>p<10?'nearly horizontal':p<30?'gently plunging':p<60?'moderately plunging':'steeply plunging';
-const tightTxt=a=>a>120?'a gentle':a>70?'an open':a>30?'a close':a>10?'a tight':'an isoclinal';
+const al=(vs,u)=>vs.map(v=>dot(v,u)<0?v.map(c=>-c):v);
 
-function analyse(nm){
-  const P=data.filter(d=>d.s===nm&&d.k==='p');
-  if(P.length<3){ana=null;lastText='';return `<div class='mute'>Set “${esc(nm)}” needs at least 3 plane measurements. Add more, then tap Analyse again.</div>`}
-  const V=P.map(d=>poleVec(d.a,d.b)),E=eig3(V),[S1,S2,S3]=E.S,u1=down(E.u[0]),u2=E.u[1];
-  const k1=Math.log(S1/S2),k2=Math.log(S2/S3),str=Math.log(S1/S3);
-  const type=S1>.88?'cluster':str<1?'scatter':(k1/(k2||1e-6)>1?'cluster':'girdle');
-  const dev=V.reduce((s,v)=>s+Math.acos(Math.min(1,Math.abs(dot(v,u1)))),0)/V.length/D;
-  const m1=toTP(u1),mS=mod(m1.t+90),mD=90-m1.p,mDir=cmp(m1.t+180),dirTxt=`${pad(mS)}/${f0(mD)} ${mDir}`;
-  const ds=P.map(d=>d.b),n=ds.length,mean=ds.reduce((a,b)=>a+b,0)/n,mn=Math.min(...ds),mx=Math.max(...ds);
-  const sd=Math.sqrt(ds.reduce((s,x)=>s+(x-mean)**2,0)/n);
-  const useX=P.every(d=>isFinite(d.x));
-  const seq=P.map((d,i)=>({x:useX?d.x:i+1,b:d.b,dd:mod(d.a+90),n:data.indexOf(d)+1})).sort((a,b)=>a.x-b.x);
-  const jumps=seq.slice(1).map((s,i)=>({j:Math.abs(s.b-seq[i].b),a:seq[i],b:s}));
-  const maxJ=jumps.reduce((m,j)=>j.j>m.j?j:m,{j:0,a:{n:0},b:{n:0}});
-  const sj=jumps.map(j=>j.j).sort((a,b)=>a-b),med=sj.length?sj[Math.floor(sj.length/2)]:0;
-  const cs=seq.reduce((s,q)=>s+Math.cos(q.dd*D),0),sn=seq.reduce((s,q)=>s+Math.sin(q.dd*D),0),md=mod(Math.atan2(sn,cs)/D);
-  const opp=seq.filter(q=>Math.abs(n180(q.dd-md))>90).length;
-  const rev=mean>=8&&Math.min(opp,n-opp)/n>=.15;
-  const mxs=seq.reduce((s,q)=>s+q.x,0)/n,sxx=seq.reduce((s,q)=>s+(q.x-mxs)**2,0),syy=seq.reduce((s,q)=>s+(q.b-mean)**2,0),sxy=seq.reduce((s,q)=>s+(q.x-mxs)*(q.b-mean),0);
-  const r2=sxx&&syy?sxy*sxy/(sxx*syy):0,change=sxx?sxy/sxx*(seq[n-1].x-seq[0].x):0;
-  let fold=null;
-  if(type==='girdle'){
-    const at=toTP(down(E.u[2])),A=[],B=[];
-    P.forEach((d,i)=>{const g=dot(V[i],u1)<0?-1:1,v=V[i].map(c=>c*g);(dot(v,u2)>=0?A:B).push({v,b:d.b})});
-    let il=null;
-    const sum=g=>{const s=[0,0,0];g.forEach(o=>o.v.forEach((c,k)=>s[k]+=c));const m=Math.hypot(...s)||1;return s.map(c=>c/m)};
-    if(A.length&&B.length)il=180-Math.acos(Math.max(-1,Math.min(1,dot(sum(A),sum(B)))))/D;
-    const mb=g=>g.length?g.reduce((s,o)=>s+o.b,0)/g.length:null;
-    fold={at,il,dA:mb(A),dB:mb(B)};
-    ana={type,gs:mod(at.t+90),gd:90-at.p,pt:down(E.u[2]),label:'Fold axis'};
-  }else ana={type,gs:mS,gd:mD,pt:u1,label:'Mean pole'};
-  const cls=mean<30?'low':mean<=60?'moderate':'high';
-  const Q=[];
-  // Q1
-  let a1,e1;
-  if(type==='cluster'){
-    a1=`Your layer is tilted but not folded. The poles bunch into one tight clump, so the bedding has nearly the same orientation at every station: about ${dirTxt} (strike/dip). This is a uniformly tilted layer (a homocline), not a fold.`;
-    e1=[`Poles form one clump (average spread about ${f0(dev)}°)`,`Mean orientation ${dirTxt}`,`Clump strength ${S1.toFixed(2)} (1.00 = every reading identical)`];
-  }else if(type==='girdle'){
-    a1=`Your layer is folded. Instead of one clump, the poles are strung along a curved band (a girdle). That means the layer bends around an axis. The fold axis is ${plung(fold.at.p)} (${pad(fold.at.t)}/${f0(fold.at.p)} trend/plunge)${fold.il!==null?`, and the limbs open at about ${f0(fold.il)}°, so it is ${tightTxt(fold.il)} fold`:''}.`;
-    e1=[`Poles lie along a curved band (the dashed curve on the net)`,`Fold axis ${pad(fold.at.t)}/${f0(fold.at.p)} (yellow diamond)`,fold.il!==null?`Angle between the limbs ≈ ${f0(fold.il)}°`:'Only one limb measured, so the limb angle cannot be found'];
-  }else{
-    a1=`The poles are scattered: no single clump and no clean curved band. The layer is probably irregularly deformed (small folds, faults or a wavy surface), or the readings mix different surfaces. Try plotting subsets separately and double-check the readings.`;
-    e1=[`No clear clump or band (clump strength ${S1.toFixed(2)})`,`Poles spread about ${f0(dev)}° around the average`];
+// ---------- per-set statistics ----------
+function st(nm){
+  const P=data.filter(d=>d.s===nm&&d.k==='p'),L=data.filter(d=>d.s===nm&&d.k==='l'),o={nm,P,L,n:P.length,nl:L.length};
+  if(o.n){
+    const V=o.V=P.map(d=>pole(d.a,d.b)),E=o.E=eig(V),n=o.n,S=o.S=E.S;
+    o.u=dn(E.u[0]);o.ds=P.map(d=>d.b);o.mean=avg(o.ds);o.sd=sdv(o.ds);o.med=med(o.ds);o.mn=Math.min.apply(null,o.ds);o.mx=Math.max.apply(null,o.ds);
+    const k1=Math.log(S[0]/S[1]),k2=Math.log(S[1]/S[2]),str=Math.log(S[0]/S[2]);
+    o.type=n<3?'few':S[0]>.88?'cluster':str<1?'scatter':(k1/(k2||1e-6)>1?'cluster':'girdle');
+    o.angs=V.map(v=>aax(v,o.u));o.dev=avg(o.angs);
+    const sm=[0,0,0];al(V,o.u).forEach(v=>v.forEach((c,i)=>sm[i]+=c));o.R=Math.hypot(sm[0],sm[1],sm[2]);
+    o.k=n>1&&o.R<n-1e-6?(n-1)/(n-o.R):Infinity;
+    o.a95=n>2&&o.R>0&&isFinite(o.k)?Math.acos(Math.max(-1,1-(n-o.R)/o.R*(Math.pow(20,1/(n-1))-1)))/D:NaN;
+    o.pl=fp(o.u);
   }
-  Q.push({q:'Describe the nature of the structural feature produced.',a:a1,e:e1});
-  // Q2
-  const parts=[];
-  if(rev)parts.push(`Some readings dip ${cmp(md)} while others dip the opposite way. That happens when the traverse crosses a fold hinge: the layer bends over and starts dipping the other direction.`);
-  if(maxJ.j>=25&&maxJ.j>3*Math.max(med,3))parts.push(`The biggest change is ${f0(maxJ.j)}° between #${maxJ.a.n} and #${maxJ.b.n}, while neighbouring stations usually differ by only about ${f0(med)}°. A sudden jump like that points to a fault or a sharp kink (tight hinge) between them.`);
-  else if(Math.abs(change)>=10&&r2>=.5)parts.push(`Dips ${change>0?'increase':'decrease'} steadily by about ${f0(Math.abs(change))}° along the profile. A smooth change like this means the layer is gently curved, or the fold plunges, rather than broken.`);
-  if(!parts.length)parts.push(sd<8?`Dips are very consistent (about ±${f0(sd)}°), so the layer is nearly flat-planar. The small differences are most likely local bumps in the rock surface or a few degrees of reading error.`:`Dips vary by about ±${f0(sd)}° with no clear pattern. Possible causes are many small folds, an uneven bedding surface, or reading errors. Adding a distance for every reading would help reveal the pattern.`);
-  Q.push({q:'What is the likely cause of changes in dips on the different strike lengths?',a:parts.join(' '),e:[`Dips range ${f0(mn)}–${f0(mx)}°, average ${f0(mean)}° (spread ±${f0(sd)}°)`,`Largest jump between neighbouring stations: ${f0(maxJ.j)}°`,`Readings dipping the opposite way: ${opp} of ${n}`]});
-  // Q3
-  const lowT='Low dips (under about 30°) mean the layers are only gently tilted. Tectonically that suggests weak or distant deformation: gentle warping or tilting, such as on the broad flank or crest of a fold, or a fairly stable area.';
-  const highT='High dips (over about 60°) mean the layers are steeply tilted. Tectonically that suggests strong compression: tight folding, or closeness to a thrust or fault where rocks are squeezed and rotated.';
-  const modT='Moderate dips (30–60°) mean noticeable tilting from compression or uplift, stronger than a gentle warp but not extreme.';
-  let a3=`Your dips range from ${f0(mn)}° to ${f0(mx)}° (average ${f0(mean)}°, which is ${cls}). `+(mx-mn>=30?`Because the range is wide, both ideas apply: ${lowT.split(':')[0].replace('Low dips','the low-dip parts')}, while the steep parts mean stronger deformation, usually the steeper fold limbs or places nearer a fault. In a fold, dips are normally lowest near the hinge or crest and steepest on the limbs.`:cls==='low'?lowT:cls==='high'?highT:modT);
-  Q.push({q:'What is the geological significance of low and high dip tectonically?',a:a3,e:[`Average dip ${f0(mean)}° (${cls})`,`Lowest ${f0(mn)}°, steepest ${f0(mx)}°`]});
-  // Q4
-  let a4,e4;
-  if(type==='girdle'){
-    const sym=fold.dA!==null&&fold.dB!==null?(Math.abs(fold.dA-fold.dB)<=10?`The limbs dip about ${f0(fold.dA)}° and ${f0(fold.dB)}°, so the fold is roughly symmetric.`:`The limbs dip about ${f0(fold.dA)}° and ${f0(fold.dB)}°, so the fold is asymmetric (one limb is steeper).`):'';
-    a4=`Yes, folding is likely. The poles form a girdle, and the fold axis is ${plung(fold.at.p)} (${pad(fold.at.t)}/${f0(fold.at.p)}).${fold.il!==null?` The fold is ${tightTxt(fold.il)} one (limb angle about ${f0(fold.il)}°).`:''} ${sym} The net alone cannot say whether it is an anticline (older rocks in the core) or a syncline; you need the rock ages for that.`;
-    e4=[`Girdle pattern (clump strength ${S1.toFixed(2)}, band strength ${S2.toFixed(2)}, gap ${S3.toFixed(2)})`,`Axis ${pad(fold.at.t)}/${f0(fold.at.p)}`];
-  }else if(type==='cluster'){
-    a4=`Probably not. Folding would spread the poles along a band, and yours form one clump. The likely structure is a uniformly tilted sequence (homocline) dipping about ${f0(mean)}° ${mDir}${maxJ.j>=25?', possibly cut by a fault where the dip jumps':''}.`;
-    e4=[`One clump, spread about ${f0(dev)}°`,`Mean ${dirTxt}`];
-  }else{
-    a4=`Not clearly. The scattered poles do not give one clean fold. Possible structures are faulting, many small folds or complex (multiple) folding. More readings, or readings kept in separate sets per outcrop, would settle it.`;
-    e4=[`No clear clump or band`];
-  }
-  Q.push({q:'Is there a possibility of folding? If yes describe the fold, if no give the likely structure.',a:a4,e:e4});
-  // three levels of explanation
-  const sgn=V.map(v=>dot(v,u1)<0?-1:1),sm3=[0,0,0];V.forEach((v,i)=>v.forEach((c,k)=>sm3[k]+=sgn[i]*c));
-  const Rr=Math.hypot(...sm3),kapT=Rr>n-1e-6?'∞':((n-1)/(n-Rr)).toFixed(1);
-  const K=k1/(k2||1e-6),KT=K.toFixed(2),CT=str.toFixed(2),bt=type==='girdle'?fold.at:null;
-  const jump=maxJ.j>=25&&maxJ.j>3*Math.max(med,3),trend=!jump&&Math.abs(change)>=10&&r2>=.5,none=!rev&&!jump&&!trend;
-  const fleuty=a=>a>120?'gentle':a>70?'open':a>30?'close':a>10?'tight':'isoclinal';
-  const plE=p=>p<10?'horizontal':p<30?'sub-horizontal':p<60?'moderately plunging':p<80?'steeply plunging':'sub-vertical';
-  const eigT=`eigenvalues S1=${S1.toFixed(2)}, S2=${S2.toFixed(2)}, S3=${S3.toFixed(2)}`;
-  const limbs=fold&&fold.dA!==null&&fold.dB!==null?`${f0(fold.dA)}° and ${f0(fold.dB)}°`:'';
-  const asym=fold&&fold.dA!==null&&fold.dB!==null&&Math.abs(fold.dA-fold.dB)>10;
-  const X=[],S=[];
-  // Q1
-  X.push({q:Q[0].q,e:[],a:type==='girdle'?`Pole fabric is a great-circle girdle (K=${KT}, C=${CT}; ${eigT}). The eigenvector of the smallest eigenvalue (S3) is the π-pole of the girdle, i.e. the β-axis (fold axis): ${pad(bt.t)}/${f0(bt.p)} trend/plunge, ${plE(bt.p)}. The best-fit π-girdle plane is ${pad(ana.gs)}/${f0(ana.gd)}.${fold.il!==null?` Interlimb angle ≈ ${f0(fold.il)}° (${fleuty(fold.il)} fold, Fleuty classification).`:' Only one limb sampled, so the interlimb angle is unconstrained.'} A small S3 (${S3.toFixed(2)}) supports a cylindrical fold.`:type==='cluster'?`Pole fabric is a point maximum (K=${KT}, C=${CT}; ${eigT}). Mean pole ${pad(m1.t)}/${f0(m1.p)} gives mean bedding S0 = ${dirTxt} (RHR strike / dip, dip direction). Fisher κ ≈ ${kapT}; mean angular deviation ${f0(dev)}°. There is no girdle component, so S0 is planar within the dispersion: a homoclinal attitude, not a folded surface.`:`Fabric is neither a point maximum nor a girdle (K=${KT}, C=${CT}; ${eigT}); mean angular deviation ${f0(dev)}° about the principal axis. This points to non-cylindrical or polyphase deformation, faulting, or a mixed population of surfaces.`});
-  S.push({q:Q[0].q,e:Q[0].e,a:type==='girdle'?`The poles lie along a girdle, so the layer is folded about a ${plung(fold.at.p)} axis (${pad(fold.at.t)}/${f0(fold.at.p)})${fold.il!==null?`; the limbs open at about ${f0(fold.il)}° (${fleuty(fold.il)} fold)`:''}.`:type==='cluster'?`The poles form one clump (point maximum), so bedding keeps a near-constant orientation of ${dirTxt}: a uniformly tilted layer (homocline), not a fold. Pole spread is about ${f0(dev)}°.`:`The poles neither clump nor form a clean girdle (clump strength ${S1.toFixed(2)}), so the structure is irregular: small folds, faults, or mixed surfaces. Try plotting subsets separately.`});
-  // Q2
-  X.push({q:Q[1].q,e:[],a:`Dip statistics: n=${n}, mean ${f0(mean)}°, σ=${f0(sd)}°, range ${f0(mn)}–${f0(mx)}°. Largest inter-station Δdip ${f0(maxJ.j)}° (#${maxJ.a.n} to #${maxJ.b.n}; median neighbour Δ ${f0(med)}°). ${opp}/${n} stations dip opposite to the vector-mean dip azimuth (${pad(md)}°). `+(rev?'The azimuthal reversal indicates the traverse crosses a hinge zone (antiformal or synformal closure). ':'')+(jump?`The Δdip is more than 3 times the median neighbour change: a discontinuity, either a fault offset or a kink/chevron hinge between the stations. `:'')+(trend?`Dip varies monotonically (net ${change>0?'+':'−'}${f0(Math.abs(change))}°, R²=${r2.toFixed(2)}), consistent with a curved limb or plunging fold geometry rather than a break. `:'')+(none?(sd<8?'σ is within hand-measurement error plus bedding-surface roughness, so S0 is effectively planar.':'The scatter shows no systematic trend: consider small-scale folds, bedding irregularity or measurement error; add traverse distances to test for periodicity.'):'')});
-  S.push({q:Q[1].q,e:Q[1].e,a:`Dips range ${f0(mn)}–${f0(mx)}° (average ${f0(mean)}°, spread ±${f0(sd)}°). `+(rev?'Some beds dip the opposite way, so the traverse crosses a fold hinge. ':'')+(jump?`The biggest jump is ${f0(maxJ.j)}° between #${maxJ.a.n} and #${maxJ.b.n} (usual neighbour change ${f0(med)}°), suggesting a fault or a tight hinge. `:'')+(trend?`Dips ${change>0?'increase':'decrease'} steadily by about ${f0(Math.abs(change))}°, suggesting a curved limb or a plunging fold. `:'')+(none?(sd<8?'Dips are very consistent, so the layer is nearly planar; small differences are local bumps or reading error.':'Dips vary with no clear pattern: small folds, an uneven surface or reading error are possible.'):'')});
-  // Q3
-  const tecE=mx-mn>=30?'The wide range is typical of a cylindrical fold: dip is lowest near the hinge/crest and approaches the limb dip away from it, so dip magnitude tracks position in the fold profile. Steep limbs reflect higher bulk shortening or proximity to a fault or thrust ramp.':cls==='low'?'Shallow dips (<30°) imply low finite tilt: weak or distal deformation, broad open warping, hinge-zone or crestal positions, or a stable foreland/cratonic setting.':cls==='high'?'Steep dips (>60°) imply high finite rotation of S0: strong horizontal shortening, tight to isoclinal folding, or proximity to thrust or fault zones.':'Moderate dips (30–60°) imply appreciable tilting from shortening or uplift, between open warping and tight folding.';
-  const tecS=mx-mn>=30?'The wide range fits a fold: dips are low near the crest or hinge and steeper on the limbs, and steep parts may lie nearer a fault.':cls==='low'?'Low dips (under 30°) mean gentle tilting: weak or distant deformation, a broad fold flank or crest, or a stable area.':cls==='high'?'High dips (over 60°) mean strong compression: tight folds, or closeness to a thrust or fault.':'Moderate dips (30–60°) mean clear tilting from compression or uplift, short of extreme.';
-  X.push({q:Q[2].q,e:[],a:`Mean dip ${f0(mean)}° (${cls}; range ${f0(mn)}–${f0(mx)}°). ${tecE}`});
-  S.push({q:Q[2].q,e:Q[2].e,a:`Dips range ${f0(mn)}–${f0(mx)}° (average ${f0(mean)}°, ${cls}). ${tecS}`});
-  // Q4
-  X.push({q:Q[3].q,e:[],a:type==='girdle'?`Yes. A girdle fabric with a β-axis at ${pad(bt.t)}/${f0(bt.p)} (${plE(bt.p)}) satisfies the cylindrical-fold criterion${fold.il!==null?`; interlimb angle ≈ ${f0(fold.il)}° (${fleuty(fold.il)})`:''}. ${limbs?`Mean limb dips ${limbs}: ${asym?'asymmetric, so check vergence':'approximately symmetric'}. `:''}Antiform versus synform cannot be separated from orientation data alone; it needs younging (stratigraphic facing) evidence.`:type==='cluster'?`No. Without a girdle (K=${KT}) there is no evidence of folding of S0 along this traverse. Interpret as a homocline ${dirTxt} (mean dip ${f0(mean)}°)${maxJ.j>=25?`; the large Δdip (${f0(maxJ.j)}°) may mark a fault offset`:''}.`:`Indeterminate. Candidates are non-cylindrical or polyphase (refolded) geometry, faulting, or mixed surfaces. Partition the data by outcrop or domain and re-run, or add stations.`});
-  S.push({q:Q[3].q,e:Q[3].e,a:type==='girdle'?`Yes, folding is likely: girdle pattern, axis ${pad(bt.t)}/${f0(bt.p)} (${plung(bt.p)})${fold.il!==null?`, ${fleuty(fold.il)} fold (limb angle about ${f0(fold.il)}°)`:''}. ${limbs?`Limbs dip about ${limbs}, ${asym?'so it is asymmetric':'so it is roughly symmetric'}. `:''}Anticline versus syncline needs rock ages.`:type==='cluster'?`Probably not: one clump means a uniformly tilted sequence (homocline) dipping about ${f0(mean)}° ${mDir}${maxJ.j>=25?', possibly cut by a fault where the dip jumps':''}.`:`Not clearly: faulting, small folds or multiple folding are possible; more data, or data kept in separate sets per outcrop, would help.`});
-  const LV=[['Level 1 · Expert technical',X],['Level 2 · Standard technical',S],['Level 3 · Simple (terms explained)',Q]];
-  // charts
-  const W=320,H=150,pl=30,pr=8,pt=10,pb=24,iw=W-pl-pr,ih=H-pt-pb;
-  const ys=b=>pt+(1-b/90)*ih,x0=seq[0].x,x1=seq[n-1].x;
-  const xs=q=>pl+(x1>x0?(q.x-x0)/(x1-x0):.5)*iw;
-  const svgA=`<svg viewBox='0 0 ${W} ${H}' width='100%' role='img' aria-label='Dip along the profile' style='font:10px system-ui'>`+[0,45,90].map(v=>`<line x1='${pl}' x2='${W-pr}' y1='${ys(v)}' y2='${ys(v)}' stroke='currentColor' opacity='.25'/><text x='${pl-4}' y='${ys(v)+3}' text-anchor='end' fill='currentColor'>${v}°</text>`).join('')+`<polyline fill='none' style='stroke:var(--acc)' stroke-width='2' points='${seq.map(q=>xs(q).toFixed(1)+','+ys(q.b).toFixed(1)).join(' ')}'/>`+seq.map(q=>`<circle cx='${xs(q).toFixed(1)}' cy='${ys(q.b).toFixed(1)}' r='3.5' style='fill:var(--acc)'/>`).join('')+`<text x='${W/2}' y='${H-4}' text-anchor='middle' fill='currentColor'>${useX?'distance along the traverse':'measurement order (#)'}</text></svg>`;
-  const bins=Array(9).fill(0);ds.forEach(x=>bins[Math.min(8,Math.floor(x/10))]++);
-  const bm=Math.max(...bins),bw=iw/9;
-  const svgB=`<svg viewBox='0 0 ${W} ${H}' width='100%' role='img' aria-label='Dip histogram' style='font:10px system-ui'>`+bins.map((c,i)=>{const h=c/bm*ih;return `<rect x='${(pl+i*bw+2).toFixed(1)}' y='${(pt+ih-h).toFixed(1)}' width='${(bw-4).toFixed(1)}' height='${h.toFixed(1)}' style='fill:var(--acc)'/>${c?`<text x='${(pl+i*bw+bw/2).toFixed(1)}' y='${(pt+ih-h-2).toFixed(1)}' text-anchor='middle' fill='currentColor'>${c}</text>`:''}<text x='${(pl+i*bw+bw/2).toFixed(1)}' y='${H-12}' text-anchor='middle' fill='currentColor'>${i*10}</text>`}).join('')+`<text x='${W/2}' y='${H-1}' text-anchor='middle' fill='currentColor'>dip (°) → low on the left, steep on the right</text></svg>`;
-  lastText=`Set ${nm}: ${n} planes`+LV.map(([t,A])=>`\n\n=== ${t} ===\n\n`+A.map((q,i)=>`Q${i+1}. ${q.q}\n${q.a}`+(q.e.length?`\nEvidence: ${q.e.join('; ')}.`:'')).join('\n\n')).join('');
-  const tag=type==='girdle'?'FOLDED pattern':type==='cluster'?'TILTED, one-clump pattern':'SCATTERED pattern';
-  return `<div class='mute' style='margin:6px 0'>Set <b>${esc(nm)}</b> · ${n} planes · <b>${tag}</b>. On the net: dashed curve = ${type==='girdle'?'best-fit band of poles':'mean plane'}, yellow diamond = ${ana.label.toLowerCase()}.</div>`
-   +`<div class='mute'>Dip along the profile (a sudden jump suggests a fault; a smooth bend suggests a fold)</div>${svgA}`
-   +`<div class='mute'>How many readings at each dip</div>${svgB}`
-   +LV.map(([t,A])=>`<details open style='margin:14px 0;border-top:2px solid var(--acc);padding-top:6px'><summary style='cursor:pointer;font-weight:700;color:var(--acc)'>${t}</summary>`+A.map((q,i)=>`<div style='margin:12px 0'><b>Q${i+1}. ${q.q}</b><div style='margin-top:4px'>${q.a}</div>${q.e.length?`<ul class='mute' style='margin:4px 0;padding-left:18px'>${q.e.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}</div>`).join('')+`</details>`).join('')
-   +`<div class='mute'>These are plain-language readings of your numbers. Hand readings off a net are good to about ±2–5°. Put the answers in your own words and cite the net as evidence.</div><div class='row' style='margin-top:8px'><button id='copyAns'>Show as text to copy</button></div>`;
+  if(o.nl){o.LV=L.map(d=>vec(d.a,d.b));o.lu=dn(eig(o.LV).u[0]);o.ldev=avg(o.LV.map(v=>aax(v,o.lu)))}
+  return o;
 }
-$('analyse').onclick=()=>{
-  const nm=$('isel').value;
-  $('iout').innerHTML=nm?analyse(nm):`<div class='mute'>Add your measurements first (or tap Load sample).</div>`;
-  const b=$('copyAns');if(b)b.onclick=()=>overlay(`<div class='mute' style='margin-bottom:6px'>Select all and copy.</div><textarea id='anatxt' readonly style='min-height:240px'></textarea>`,()=>{const t=$('anatxt');t.value=lastText;t.focus();t.select()});
-  draw();
-};
+function fg(o){
+  if(o.type!=='girdle')return null;
+  const u2=o.E.u[1],A=[],B=[],r={axis:dn(o.E.u[2])};r.at=tp(r.axis);
+  o.V.forEach((v,i)=>{const w=dot(v,o.u)<0?v.map(c=>-c):v;(dot(w,u2)>=0?A:B).push({w,b:o.ds[i]})});
+  const sm=g=>nrm(g.reduce((s,q)=>s.map((c,k)=>c+q.w[k]),[0,0,0]));
+  if(A.length&&B.length){const a=sm(A),b=sm(B);r.il=180-ang(a,b);r.dA=avg(A.map(q=>q.b));r.dB=avg(B.map(q=>q.b));r.axn=nrm(a.map((c,k)=>c-b[k]))}
+  return r;
+}
+const plE=p=>p<10?'horizontal':p<30?'gently plunging':p<60?'moderately plunging':p<80?'steeply plunging':'vertical';
+const tight=a=>a>120?'gentle':a>70?'open':a>30?'close':a>10?'tight':'isoclinal';
+const axc=d=>d>80?'upright':d>60?'steeply inclined':d>30?'moderately inclined':d>10?'gently inclined':'recumbent';
+const R=(title,x,s,m,e,extra)=>Object.assign({title,x,s:s||x,m:m||s||x,e:e||[]},extra||{});
+const NONE=(nm,what)=>R('No data',`Set “${nm}” has no ${what||'plane'} measurements for this question. Add some (or tap Load sample) and ask again.`);
 
-// export
-function overlay(html,after){
-  const o=$('ov');o.innerHTML=`<div class="box">${html}<div class="row" style="margin-top:8px"><button id="ovc" class="p">Close</button></div></div>`;
-  o.style.display='flex';$('ovc').onclick=()=>{o.style.display='none'};if(after)after(o);
+// ---------- restore matrices ----------
+function restore(o){
+  const out=[];
+  if(o.n){
+    const q=tp(o.u),s=mod(q.t+90),d=90-q.p;
+    const pick=(t,p,w,f,best)=>{const a=rax(t,p,w),b=rax(t,p,-w);return f(mv(a,best))>=f(mv(b,best))?a:b};
+    out.push({l:'Level the mean bedding (tilt correction)',R:pick(s,0,d,v=>tp(v).p,o.u)});
+    const g=fg(o);
+    if(g)out.push({l:'Make the fold axis horizontal',R:pick(mod(g.at.t+90),0,g.at.p,v=>-tp(v).p,g.axis)});
+  }
+  return out;
 }
-$('expImg').onclick=()=>{
-  const c2=document.createElement('canvas');c2.width=cv.width;c2.height=cv.height;
-  const g=c2.getContext('2d');g.fillStyle=css('--card');g.fillRect(0,0,c2.width,c2.height);g.drawImage(cv,0,0);
-  overlay('<img alt="Stereonet export" src="'+c2.toDataURL('image/png')+'"><div class="mute" style="margin-top:6px">Press and hold the image to save or share it.</div>');
+
+// ---------- topics ----------
+const T={};
+T.summary=o=>{
+  if(!o.n&&!o.nl)return NONE(o.nm,'');
+  if(!o.n)return R('Overview of set '+o.nm,`${o.nl} lines, mean ${fl(o.lu)}.`);
+  const g=fg(o),L=o.nl?`${o.nl} lines, mean ${fl(o.lu)}`:'';
+  const pat=o.type==='girdle'?'folded (poles along a band)':o.type==='cluster'?'tilted but not folded (poles in one clump)':o.type==='scatter'?'irregular (poles scattered)':'too few readings to classify';
+  const dips=`dips ${f0(o.mn)}–${f0(o.mx)}° (mean ${f0(o.mean)}°)`;
+  const x=`${o.n} planes; fabric ${pat}; S1/S2/S3 ${o.S.map(v=>v.toFixed(2)).join('/')}. `+(g?`β-axis ${fl(g.axis)}${g.il!=null?`, interlimb ${f0(g.il)}° (${tight(g.il)})`:''}; `:`mean S0 ${o.pl}, κ≈${fin(o.k)}; `)+dips+(L?`; ${L}.`:'.');
+  const s=`${o.n} planes form a pattern that is ${pat}. `+(g?`The fold axis is ${plE(g.at.p)} (${fl(g.axis)}). `:`The average layer is ${o.pl}. `)+`Your ${dips}.`+(L?` Also ${L}.`:'');
+  const m=`Your ${o.n} readings suggest the rock layer is ${pat}. `+(o.mean<30?'The layers are fairly flat.':o.mean>60?'The layers are steep.':'The layers are moderately tilted.')+' Ask about folds, dips, sets, stress or uncertainty for more detail.';
+  return R('Overview of set '+o.nm,x,s,m,[`${o.n} planes${o.nl?`, ${o.nl} lines`:''}`,`Pattern: ${pat}`]);
 };
-$('expData').onclick=()=>{
-  const rows=['set,type,strike_or_trend,dip_or_plunge,dip_direction'].concat(data.map(d=>d.k==='p'?`${d.s},plane,${pad(d.a)},${Math.round(d.b*10)/10},${cmp(d.a+90)}`:`${d.s},line,${pad(d.a)},${Math.round(d.b*10)/10},`));
-  overlay('<div class="mute" style="margin-bottom:6px">Strikes are right-hand-rule. Select all and copy.</div><textarea id="exptxt" readonly style="min-height:180px"></textarea>',()=>{const t=$('exptxt');t.value=rows.join('\n');t.focus();t.select()});
+T.mean=o=>{
+  if(!o.n&&!o.nl)return NONE(o.nm,'');
+  const e=[];let x='',s='',m='';
+  if(o.n){
+    const gi=o.type==='girdle';
+    x=`Mean S0 (principal pole) ${o.pl}${gi?' (girdle: not representative, use the β-axis)':''}. Fisher κ≈${fin(o.k)}${isNaN(o.a95)?'':`, α95≈${f0(o.a95)}°`}; mean angular deviation ${f0(o.dev)}°; R=${o.R.toFixed(2)} of ${o.n}.`;
+    s=`The average layer is ${o.pl} (strike/dip, dip direction)${gi?', but the layer is folded so one average is not typical':''}. Readings spread about ${f0(o.dev)}° around it (concentration κ≈${fin(o.k)}; higher means tighter).`;
+    m=`On average the layer runs ${o.pl.split(' ')[0].split('/')[0]}° (strike) and tilts ${f0(90-tp(o.u).p)}° towards ${cmp(tp(o.u).t+180)}. Your readings are ${o.dev<10?'very consistent':o.dev<20?'fairly consistent':'quite variable'}.`;
+    e.push(`Mean orientation ${o.pl}`,`Spread ${f0(o.dev)}°`);
+  }
+  if(o.nl){const l=` Mean line ${fl(o.lu)} (trend/plunge), spread ${f0(o.ldev)}°.`;x+=l;s+=l;m+=l;e.push(`Mean line ${fl(o.lu)}`)}
+  return R('Mean orientation of set '+o.nm,x,s,m,e);
 };
-['net','oGrid','oGC','oPole','oLine','oNum','oDen','oMean','oIso','oAna'].forEach(id=>$(id).onchange=draw);
-addEventListener('resize',draw);
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',draw);
-setMode('spin');
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-</script>
-<script src="tool.js?v=5"></script>
-<script src="Solver.js?v=4"></script>
-<script src="Geoqa.js?v=4"></script>
-</body>
-</html>
+T.fold=o=>{
+  if(!o.n)return NONE(o.nm);
+  const g=fg(o);
+  if(!g){
+    const x=o.type==='cluster'?`No girdle (S1=${o.S[0].toFixed(2)}): no evidence of folding. S0 is a homocline ${o.pl}.`:o.type==='scatter'?'Fabric is dispersed: neither a point maximum nor a girdle. Fold geometry is indeterminate; split the data by outcrop and retry.':'Need at least 3 plane readings to test for folding.';
+    return R('Fold geometry',x,x.replace('homocline','uniformly tilted layer'),o.type==='cluster'?'There is no fold here: the layer is just tilted the same way everywhere.':x,[`Pattern: ${o.type}`]);
+  }
+  const lim=g.il!=null?`${f0(g.dA)}° and ${f0(g.dB)}°`:'',asym=g.il!=null&&Math.abs(g.dA-g.dB)>10;
+  const ac=g.axn?`${fp(g.axn)} (${axc(90-tp(g.axn).p)})`:'';
+  const x=`β-axis ${fl(g.axis)} (${plE(g.at.p)}); π-girdle plane ${fp(g.axis)}. `+(g.il!=null?`Interlimb ${f0(g.il)}° (${tight(g.il)}); mean limb dips ${lim} (${asym?'asymmetric':'symmetric'}). Axial plane ≈ ${ac}, so ${axc(90-tp(g.axn).p)} ${plE(g.at.p)} fold. `:'Only one limb sampled: interlimb angle and axial plane are unconstrained. ')+`S3=${o.S[2].toFixed(2)} supports cylindrical geometry.`;
+  const s=`The poles lie on a band, so the layer is folded about an axis trending/plunging ${fl(g.axis)} (${plE(g.at.p)}). `+(g.il!=null?`The limbs open at about ${f0(g.il)}° (${tight(g.il)} fold) and dip ${lim}. The axial plane (the plane splitting the fold in half) is about ${ac}. `:'')+'Anticline or syncline needs rock ages.';
+  const m=`The layer is bent into a fold. The fold line runs towards ${cmp(g.at.t)} and ${g.at.p<10?'is almost level':'tilts down '+f0(g.at.p)+'°'}. `+(g.il!=null?`It is a ${tight(g.il)} fold (the sides open ${f0(g.il)}°) and ${asym?'one side is steeper than the other':'both sides are about equally steep'}.`:'');
+  return R('Fold geometry',x,s,m,[`Axis ${fl(g.axis)}`,g.il!=null?`Interlimb ${f0(g.il)}°`:'One limb only',g.axn?`Axial plane ${ac}`:'']);
+};
+T.profile=o=>{
+  if(!o.n)return NONE(o.nm);
+  const useX=o.P.every(d=>isFinite(d.x)),n=o.n;
+  const q=o.P.map((d,i)=>({x:useX?d.x:i+1,b:d.b,dd:mod(d.a+90),n:data.indexOf(d)+1})).sort((a,b)=>a.x-b.x);
+  const jm=q.slice(1).map((r,i)=>({j:Math.abs(r.b-q[i].b),a:q[i].n,b:r.n})),mx=jm.reduce((m,j)=>j.j>m.j?j:m,{j:0,a:0,b:0}),md=jm.length?med(jm.map(j=>j.j)):0;
+  const cs=avg(q.map(r=>Math.cos(r.dd*D))),sn=avg(q.map(r=>Math.sin(r.dd*D))),mdir=mod(Math.atan2(sn,cs)/D);
+  const opp=q.filter(r=>Math.abs(((r.dd-mdir+540)%360)-180)>90).length,rev=o.mean>=8&&Math.min(opp,n-opp)/n>=.15;
+  const jump=mx.j>=25&&mx.j>3*Math.max(md,3),mxs=avg(q.map(r=>r.x)),sxx=q.reduce((s,r)=>s+(r.x-mxs)**2,0),syy=q.reduce((s,r)=>s+(r.b-o.mean)**2,0),sxy=q.reduce((s,r)=>s+(r.x-mxs)*(r.b-o.mean),0);
+  const r2=sxx&&syy?sxy*sxy/(sxx*syy):0,ch=sxx?sxy/sxx*(q[n-1].x-q[0].x):0,tr=!jump&&Math.abs(ch)>=10&&r2>=.5;
+  const why=[];
+  if(rev)why.push(['reversal of dip direction: the traverse crosses a fold hinge','some beds dip the opposite way, so you crossed a fold hinge','the layers tilt one way, then the other way: you crossed the top or bottom of a fold']);
+  if(jump)why.push([`Δdip of ${f0(mx.j)}° between #${mx.a} and #${mx.b} (median neighbour ${f0(md)}°): a discontinuity, fault offset or kink hinge`,`a sudden ${f0(mx.j)}° jump between #${mx.a} and #${mx.b}: likely a fault or sharp hinge`,`the tilt suddenly jumps ${f0(mx.j)}° between #${mx.a} and #${mx.b}, like a step: probably a fault or a sharp bend`]);
+  if(tr)why.push([`monotonic dip change (${ch>0?'+':'−'}${f0(Math.abs(ch))}°, R²=${r2.toFixed(2)}): curved limb or plunging fold`,`dips ${ch>0?'rise':'fall'} steadily by ${f0(Math.abs(ch))}°: a gentle curve or plunging fold`,`the tilt ${ch>0?'grows':'shrinks'} smoothly: the layer is gently curved`]);
+  if(!why.length)why.push(o.sd<8?['σ within measurement error plus surface roughness: planar S0','dips are very consistent: nearly planar layer','the tilt is almost the same everywhere, so small differences are just bumps or reading error']:['unsystematic scatter: small folds, bedding irregularity or error','dips vary with no clear pattern: small folds, uneven surface or reading error','the tilt wobbles without a pattern: small bends or measuring error']);
+  return R('Why dips change along the traverse',`Dip σ=${f0(o.sd)}°, range ${f0(o.mn)}–${f0(o.mx)}°; `+why.map(w=>w[0]).join('; ')+'.',why.map(w=>w[1]).join('; ')+'.',why.map(w=>w[2]).join('; ')+'.',[`Largest jump ${f0(mx.j)}°`,`${opp} of ${n} dip the opposite way`]);
+};
+T.dipstats=o=>{
+  if(!o.n)return NONE(o.nm);
+  const lo=o.ds.filter(d=>d<30).length,mi=o.ds.filter(d=>d>=30&&d<=60).length,hi=o.ds.filter(d=>d>60).length,pc=c=>f0(100*c/o.n);
+  const bins=Array(18).fill(0);o.P.forEach(d=>bins[Math.floor(mod(d.a)%180/10)]++);
+  const bm=Math.max.apply(null,bins),bi=bins.indexOf(bm),dom=`${pad(bi*10)}–${pad(bi*10+10)}°`;
+  let svg=`<svg viewBox='0 0 160 160' width='160' role='img' aria-label='Strike rose diagram' style='font:10px system-ui;display:block;margin:6px auto'><circle cx='80' cy='80' r='62' fill='none' stroke='currentColor' opacity='.25'/><text x='80' y='11' text-anchor='middle' fill='currentColor'>N</text>`;
+  bins.forEach((c,i)=>{if(!c)return;[0,180].forEach(off=>{const a1=(i*10+off)*D,a2=(i*10+10+off)*D,r=62*c/bm,p=(a,rr)=>(80+rr*Math.sin(a)).toFixed(1)+','+(80-rr*Math.cos(a)).toFixed(1);svg+=`<polygon points='80,80 ${p(a1,r)} ${p(a2,r)}' style='fill:var(--acc)' opacity='.8'/>`})});
+  svg+='</svg><div class="mute" style="text-align:center">Strike rose (longest petal = most common strike)</div>';
+  const sig=lo>=hi&&lo>=mi?'low':hi>=mi?'high':'moderate';
+  const tec={low:['shallow dips: weak or distal deformation, broad warping, fold crest/hinge zones or a stable foreland','gentle tilting: weak or distant deformation, a broad fold flank or crest','the rocks are only gently tilted, so they were not squeezed much'],high:['steep dips: high finite rotation, strong shortening, tight/isoclinal folds or proximity to thrusts/faults','steep tilting: strong compression, tight folds or closeness to a fault','the rocks are steeply tilted, so they were squeezed hard'],moderate:['intermediate dips: appreciable tilting from shortening or uplift','clear tilting from compression or uplift, short of extreme','the rocks are noticeably tilted but not extremely']}[sig];
+  return R('Dip and strike statistics',`n=${o.n}; dip mean ${f0(o.mean)}°, median ${f0(o.med)}°, σ ${f0(o.sd)}°; <30°: ${pc(lo)}%, 30–60°: ${pc(mi)}%, >60°: ${pc(hi)}%. Dominant strike ${dom}. Mostly ${tec[0]}.`,`Dips average ${f0(o.mean)}° (${pc(lo)}% gentle, ${pc(mi)}% moderate, ${pc(hi)}% steep). Most common strike ${dom}. Mostly ${tec[1]}.`,`Most dips are ${sig}. The most common strike is ${dom}. In simple terms: ${tec[2]}.`,[`Low/moderate/steep: ${lo}/${mi}/${hi}`],{html:svg});
+};
+T.compare=(o,o2)=>{
+  if(!o.n)return NONE(o.nm);
+  if(!o2||!o2.n||o2.nm===o.nm)return R('Compare two sets','Choose a different second set (“Set B”) that has plane measurements, then ask again.');
+  let n1=o.u,n2=o2.u;if(dot(n1,n2)<0)n2=n2.map(c=>-c);
+  const dih=ang(n1,n2),dd=Math.abs(o.mean-o2.mean);
+  if(dih<3)return R('Compare sets '+o.nm+' and '+o2.nm,`Mean S0 ${o.pl} vs ${o2.pl}: dihedral ${dih.toFixed(1)}°, i.e. the same orientation within error. Same surface or same set.`,'The two sets have practically the same orientation, so they are probably the same set or surface.',null,[`Angle ${dih.toFixed(1)}°`]);
+  const I=nrm(cross(n1,n2)),s1=nrm(cross(I,n1.map((c,k)=>c+n2[k]))),s3=nrm(cross(I,n1.map((c,k)=>c-n2[k])));
+  const x=`Mean S0: ${o.nm} ${o.pl}; ${o2.nm} ${o2.pl}. Dihedral angle ${f0(dih)}°, Δdip ${f0(dd)}°. Intersection (β) ${fl(I)}. If bedding either side of a surface: ${f0(dih)}° tilt contrast = angular unconformity (or intervening fold/fault). If conjugate shear/fracture sets: σ1 (acute bisector) ${fl(s1)}, σ2 (intersection) ${fl(I)}, σ3 ${fl(s3)}.`;
+  const s=`The two sets differ by ${f0(dih)}° (dips differ by ${f0(dd)}°) and cross along ${fl(I)}. If they are layers above and below a surface, that angle suggests an angular unconformity. If they are fractures or faults, they may be a conjugate pair: the squeeze direction is about ${fl(s1)}, and the intersection ${fl(I)} is the middle stress axis.`;
+  const m=`The two sets are tilted differently: ${f0(dih)}° apart. If they are rock layers, an old tilted layer was eroded and new layers were laid on top (an angular unconformity). If they are cracks, they may be a matching pair formed by squeezing from about ${cmp(tp(s1).t)}.`;
+  return R('Compare sets '+o.nm+' and '+o2.nm,x,s,m,[`Dihedral ${f0(dih)}°`,`Intersection ${fl(I)}`,`Bisector σ1 ${fl(s1)}`]);
+};
+T.apparent=(o,o2,num)=>{
+  if(!o.n)return NONE(o.nm);
+  if(!isFinite(num))return R('Apparent dip','Type a direction in the “direction°” box, or in your question (e.g. “apparent dip towards 120”).');
+  const q=tp(o.u),s=mod(q.t+90),d=90-q.p,a=Math.atan(Math.tan(d*D)*Math.sin((num-s)*D))/D,tr=a>=0?mod(num):mod(num+180);
+  const x=`Mean plane ${o.pl}. tan(apparent)=tan(true)·sin(β), β=angle between strike and section line. In direction ${pad(num)}°: apparent dip ${f0(Math.abs(a))}° towards ${pad(tr)}° (${cmp(tr)}). True dip ${f0(d)}° towards ${cmp(s+90)}.`;
+  return R('Apparent dip',x,`The layer is ${o.pl}. Cutting it along ${pad(num)}° you see a dip of ${f0(Math.abs(a))}° towards ${pad(tr)}°. The true dip (${f0(d)}°) is only seen at right angles to strike; any other direction shows a smaller apparent dip.`,`Along ${pad(num)}° the layer looks like it tilts ${f0(Math.abs(a))}° (towards ${cmp(tr)}). It really tilts ${f0(d)}°, but only when you look straight across the layer.`,[`Apparent ${f0(Math.abs(a))}°`,`True ${f0(d)}°`]);
+};
+T.lineation=(o,o2)=>{
+  if(!o.nl)return R('Lineations','This set has no lines. Add some (type “Line: trend / plunge”) and ask again.');
+  const pl=o2&&o2.nm!==o.nm&&o2.n?o2:(o.n?o:null),b=`${o.nl} lines, mean ${fl(o.lu)}, spread ${f0(o.ldev)}°.`;
+  if(!pl)return R('Lineations',b,b,b+' Lines are directions in space (for example slickensides, stretching or fold-axis directions).');
+  const n=pl.u,inp=Math.asin(Math.min(1,Math.abs(dot(o.lu,n))))/D,sdir=vec(tp(n).t+90,0),pitch=Math.acos(Math.min(1,Math.abs(dot(nrm(o.lu),sdir))))/D;
+  const g=fg(pl),pa=g?aax(o.lu,g.axis):null;
+  const kin=pitch>70?'down-dip (dip-slip / transport up or down the plane)':pitch<20?'along strike (strike-slip)':'oblique';
+  const inT=inp<10,rel=pa==null?'':pa<15?'parallel to the fold axis (hinge or intersection lineation)':pa>75?'perpendicular to the fold axis (stretching/transport lineation)':'oblique to the fold axis';
+  const fo=pl.type==='girdle';
+  const x=`${b}${fo?' The planes are folded, so there is no single plane to compare with.':` Angle to mean plane ${pl.pl}: ${f0(inp)}° (${inT?`lies in the plane, pitch ${f0(pitch)}° from strike: ${kin}`:'does not lie in the plane'}).`}${rel?` Relative to the β-axis ${fl(g.axis)}: ${rel}.`:''}`;
+  const m=`${b} ${fo?'':inT?`The lines sit on the layer and run ${kin}. That shows the direction rocks moved along it (like scratches on a fault).`:'The lines do not lie on the layer, so they are probably fold or crossing-layer lines instead of scratches.'}${rel?` They are ${rel}.`:''}`;
+  return R('Lineations',x,x,m,[`Line-to-plane angle ${f0(inp)}°`,`Pitch ${f0(pitch)}°`]);
+};
+T.stress=o=>{
+  if(!o.n)return NONE(o.nm);
+  const g=fg(o);
+  if(g){const t=mod(g.at.t+90),ax=`${cmp(t)}–${cmp(t+180)}`;
+    return R('Shortening / stress direction',`Fold β-axis ${fl(g.axis)}: shortening (σ1) is perpendicular to it, horizontal trend ≈ ${pad(t)}°/${pad(t+180)}° (${ax}), with σ2 along the axis. Exact only for upright, cylindrical, non-refolded folds.`,`Folds form when rocks are squeezed at right angles to the fold axis. Axis ${fl(g.axis)}, so the squeeze was about ${ax}.`,`The rocks were pushed together from about ${ax} (across the fold line, which runs ${cmp(g.at.t)}).`,[`Shortening ${ax}`]);}
+  const dd=tp(o.u).t+180;
+  return R('Shortening / stress direction',`No folding. The tilt (${o.pl}) records rotation towards ${pad(dd)}° and does not give principal stresses on its own; combine with fold or conjugate-fracture data (Compare sets).`,`The layers just tilt towards ${cmp(dd)} (${o.pl}). Tilt alone does not give the stress direction; use folds or crossing fractures for that.`,`The rocks were tipped towards ${cmp(dd)}. We cannot say the squeeze direction from this alone.`,[`Tilt direction ${cmp(dd)}`]);
+};
+T.quality=o=>{
+  if(!o.n)return NONE(o.nm);
+  const out=o.type==='cluster'&&o.n>=5?o.angs.map((a,i)=>({a,n:data.indexOf(o.P[i])+1})).filter(q=>q.a>o.dev+2*sdv(o.angs)&&q.a>10):[];
+  const rate=o.n<10?'small (aim for 25+ for stable statistics)':o.n<25?'moderate':'good';
+  const x=`n=${o.n} (${rate}). ${o.type==='girdle'?`Girdle: Fisher statistics do not apply; mean distance of poles from the girdle plane is ${f0(avg(o.V.map(v=>Math.asin(Math.min(1,Math.abs(dot(v,o.E.u[2]))))/D)))}°.`:`κ≈${fin(o.k)}${isNaN(o.a95)?'':`, α95≈${f0(o.a95)}° (95% cone for the mean)`}.`} Outliers (>2σ from mean): ${out.length?out.map(q=>'#'+q.n).join(', '):'none'}. Hand readings are good to ±2–5°.`;
+  const m=`You have ${o.n} readings, which is ${rate}. ${out.length?`Readings ${out.map(q=>'#'+q.n).join(', ')} look odd; double-check them.`:'No readings look wildly off.'} Hand-reading a net is accurate to about ±2–5°.`;
+  return R('Data quality and uncertainty',x,x,m,[`n=${o.n}`,`Outliers: ${out.length}`]);
+};
+T.sets=o=>{
+  if(!o.n)return NONE(o.nm);
+  let rem=o.V.map((v,i)=>({v,i})),out=[];
+  while(rem.length>=2&&out.length<6){
+    let best=null,bc=0;rem.forEach(a=>{const c=rem.filter(b=>aax(a.v,b.v)<=20).length;if(c>bc){bc=c;best=a}});
+    if(bc<2)break;
+    let mean=best.v,mem=rem.filter(b=>aax(best.v,b.v)<=25);
+    for(let k=0;k<3;k++){mean=nrm(al(mem.map(b=>b.v),mean).reduce((s,v)=>s.map((c,j)=>c+v[j]),[0,0,0]));mem=rem.filter(b=>aax(mean,b.v)<=25)}
+    out.push({n:mem.length,u:dn(mean)});rem=rem.filter(b=>mem.indexOf(b)<0);
+  }
+  if(!out.length)return R('How many sets?','No clusters found: orientations are too dispersed or too few.');
+  const L=out.map((c,i)=>`Set ${i+1}: ${c.n} readings (${f0(100*c.n/o.n)}%), ${fp(c.u)}`);
+  const x=`Clustering (25° cones) found ${out.length} set${out.length>1?'s':''}: ${L.join('; ')}${rem.length?`; ${rem.length} unassigned`:''}.`;
+  return R('How many sets?',x,x,`There ${out.length>1?'are':'is'} ${out.length} main direction${out.length>1?'s':''} of ${out.length>1?'layers or cracks':'layers or cracks'}: ${L.join('; ')}. Tip: tick “Contour” on the net to see the same clumps.`,L);
+};
+T.restore=o=>{
+  if(!o.n)return NONE(o.nm);
+  const acts=restore(o);
+  const x=`Rotations are applied to the 3D view (undo or reset any time). Tilt correction rotates about the mean strike by the mean dip so S0 becomes horizontal (pole plunge 90°). ${fg(o)?'Plunge removal rotates about the horizontal axis perpendicular to the β-axis so the axis becomes horizontal.':''} Use them to restore paleo-orientations of lineations or paleocurrents.`;
+  return R('Restore to horizontal',x,x,'These buttons tip your data back to how it was before folding or tilting: flat layers, or a level fold line. Tap a button, then look at the net. Use “Reset view” to go back.',[],{acts});
+};
+const TOPICS=[['summary','Overview of my data'],['fold','Fold geometry (axis, limbs, axial plane)'],['mean','Mean orientation and spread'],['profile','Why do dips change along the traverse?'],['dipstats','Dip and strike statistics (rose, low/high dips)'],['compare','Compare two sets (angle, intersection, conjugate)'],['apparent','Apparent dip in a given direction'],['lineation','Lineations (rake, relation to folds)'],['stress','Shortening / stress direction'],['quality','Data quality and uncertainty'],['sets','How many joint / fracture sets?'],['restore','Restore to horizontal (rotate the net)']];
+const KW=[['restore',/restor|tilt corr|level|flatten|unfold|rotate|rotat|original|pre-?tilt|paleo|palaeo/],['apparent',/apparent|cross.?section|true dip/],['lineation',/lineation|slicken|striation|rake|pitch|stretching|\blines?\b/],['sets',/how many|joint|fractur|cluster|population|famil/],['compare',/compar|between|intersect|conjugate|unconformit|angular|differ|versus|\bvs\b|bisect/],['stress',/stress|shorten|compress|tecton|regional|sigma|σ|vergen|transport|force|squeez/],['quality',/reliab|quality|error|uncertain|outlier|confiden|accura|fisher|alpha|α95|sample size/],['fold',/fold|axis|axes|limb|hinge|anticlin|synclin|interlimb|axial|girdle|beta|β|plunge/],['profile',/jump|fault|offset|discontin|along|traverse|change|vary|variation|reversal|strike length/],['dipstats',/histogram|steep|gentle|low dip|high dip|rose|distribution|range|statist/],['mean',/mean|average|dominant|preferred|attitude|orientation|concentrat|disper|spread|vector/],['summary',/[\s\S]*/]];
+function answer(topic,nmA,nmB,num){return T[topic](st(nmA),nmB?st(nmB):null,num)}
+if(typeof window!=='undefined')window.__st={answer:answer,st:st,restore:restore,topics:TOPICS};
+if(typeof document==='undefined'||!document.getElementById('interp'))return;
+
+// ---------- interface ----------
+const $=id=>document.getElementById(id);
+let acts=[],lastTxt='';
+function names(){return Array.from(new Set(data.map(d=>d.s)))}
+function refresh(){
+  const nm=names(),sa=$('tSet'),sb=$('tSet2'),va=sa.value,vb=sb.value;
+  sa.innerHTML=nm.map(n=>`<option>${esc(n)}</option>`).join('');
+  sb.innerHTML='<option value="">Set B: none</option>'+nm.map(n=>`<option>${esc(n)}</option>`).join('');
+  if(nm.indexOf(va)>=0)sa.value=va;if(nm.indexOf(vb)>=0)sb.value=vb;
+}
+function render(r){
+  const lv=$('tLevel').value,ks=lv==='all'?['x','s','m']:[lv],nmz={x:'Expert technical',s:'Standard technical',m:'Simple (terms explained)'};
+  acts=r.acts||[];
+  let h=`<div style='margin:10px 0 4px'><b>${esc(r.title)}</b></div>`,txt=r.title+'\n';
+  ks.forEach(k=>{h+=`<div style='margin:6px 0'>${ks.length>1?`<div class='mute' style='font-weight:700;color:var(--acc)'>${nmz[k]}</div>`:''}${esc(r[k])}</div>`;txt+=(ks.length>1?nmz[k]+': ':'')+r[k]+'\n'});
+  const ev=r.e.filter(Boolean);
+  if(ev.length){h+=`<ul class='mute' style='margin:4px 0;padding-left:18px'>${ev.map(e=>`<li>${esc(e)}</li>`).join('')}</ul>`;txt+='Evidence: '+ev.join('; ')+'\n'}
+  if(r.html)h+=r.html;
+  if(acts.length)h+=`<div class='row'>${acts.map((a,i)=>`<button data-act='${i}'>${esc(a.l)}</button>`).join('')}<button class='s' data-act='reset'>Reset view</button></div>`;
+  h+=`<div class='row' style='margin-top:6px'><button class='s' data-act='copy'>Show as text to copy</button></div>`;
+  lastTxt=txt;$('tOut').innerHTML=h;
+}
+function run(topic,nmA,nmB,num){
+  if(!nmA){$('tOut').innerHTML="<div class='mute'>Add your measurements first (or tap Load sample).</div>";return}
+  try{render(answer(topic,nmA,nmB,num))}catch(e){$('tOut').innerHTML="<div class='mute'>Sorry, that question could not be answered for this set.</div>"}
+}
+const c=document.createElement('div');c.className='card';c.id='toolsCard';
+c.innerHTML=`<h2 style="font-size:16px;margin:0 0 4px">Ask about my data</h2>
+<div class="mute" style="margin-bottom:8px">Pick a question or type your own, like “what is the fold axis?”, “how many joint sets?” or “apparent dip towards 120”. Answers come at three levels.</div>
+<div class="row"><select id="tSet" aria-label="Set"></select><select id="tSet2" aria-label="Second set"></select><select id="tLevel" aria-label="Level"><option value="s">Standard</option><option value="x">Expert</option><option value="m">Simple</option><option value="all">All three</option></select></div>
+<div class="row"><select id="tTopic" style="flex:1;min-width:180px">${TOPICS.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join('')}</select><input id="tNum" type="number" inputmode="decimal" placeholder="direction°" style="width:96px"><button class="p" id="tGo">Answer</button></div>
+<div class="row"><input id="tQ" placeholder="…or type a question" style="flex:1;min-width:180px"><button id="tAsk">Ask</button></div>
+<div id="tOut"></div>`;
+$('interp').after(c);refresh();
+c.addEventListener('pointerdown',refresh,true);
+$('tGo').onclick=()=>{refresh();run($('tTopic').value,$('tSet').value,$('tSet2').value,parseFloat($('tNum').value))};
+$('tAsk').onclick=()=>{
+  refresh();
+  const q=$('tQ').value.toLowerCase(),nm=names(),hit=nm.filter(n=>q.indexOf(n.toLowerCase())>=0);
+  const topic=(KW.find(k=>k[1].test(q))||KW[KW.length-1])[0],m=q.match(/\d+(\.\d+)?/);
+  const a=hit[0]||$('tSet').value,b=hit[1]||$('tSet2').value||(topic==='compare'?nm.filter(n=>n!==a)[0]:'');
+  $('tTopic').value=topic;run(topic,a,b,m?parseFloat(m[0]):parseFloat($('tNum').value));
+};
+$('tQ').addEventListener('keydown',e=>{if(e.key==='Enter')$('tAsk').click()});
+$('tOut').onclick=e=>{
+  const a=e.target.dataset&&e.target.dataset.act;if(a===undefined)return;
+  if(a==='copy'){overlay("<div class='mute' style='margin-bottom:6px'>Select all and copy.</div><textarea id='ttxt' readonly style='min-height:200px'></textarea>",()=>{const t=$('ttxt');t.value=lastTxt;t.focus();t.select()});return}
+  if(a==='reset'){rot=0;M=[[1,0,0],[0,1,0],[0,0,1]];hist=[];draw();return}
+   setMode('tum');pushHist();M=mmul(acts[+a].R,M);if(window.__tab)__tab('p');draw();
+};
+  // ---------- 3D block diagram (Stage 1) ----------
+(function(){
+const cv3=$('blk'),g=cv3.getContext('2d'),EL=28*D,H=0.7;
+let on=false,vaz=+$('blkAz').value;
+const cs=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const dt=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const add=(a,b,k)=>a.map((c,i)=>c+k*b[i]);
+const FACES=[
+ {n:[0,0,1],v:[[-1,-1,H],[1,-1,H],[1,1,H],[-1,1,H]]},
+ {n:[0,-1,0],v:[[-1,-1,-H],[1,-1,-H],[1,-1,H],[-1,-1,H]]},
+ {n:[0,1,0],v:[[-1,1,-H],[1,1,-H],[1,1,H],[-1,1,H]]},
+ {n:[1,0,0],v:[[1,-1,-H],[1,1,-H],[1,1,H],[1,-1,H]]},
+ {n:[-1,0,0],v:[[-1,-1,-H],[-1,1,-H],[-1,1,H],[-1,-1,H]]}
+];
+const BOUNDS=[[[1,0,0],1],[[-1,0,0],1],[[0,1,0],1],[[0,-1,0],1],[[0,0,1],H],[[0,0,-1],H]];
+function clip(poly,n,off){
+  const out=[];
+  for(let i=0;i<poly.length;i++){
+    const a=poly[i],b=poly[(i+1)%poly.length],da=dt(n,a)-off,db=dt(n,b)-off;
+    if(da<=0)out.push(a);
+    if((da<0&&db>0)||(da>0&&db<0)){const t=da/(da-db);out.push(a.map((c,k)=>c+t*(b[k]-c)))}
+  }
+  return out;
+}
+function activePlane(){
+  const ok=i=>data[i]&&data[i].k==='p'&&!hid[data[i].s];
+  if(selItem!==null&&ok(selItem))return{d:data[selItem],i:selItem};
+  for(let i=data.length-1;i>=0;i--)if(ok(i)&&(selSet===null||data[i].s===selSet))return{d:data[i],i};
+  return null;
+}
+// ---------- Stage 1.5: auto-diagnostic structure view ----------
+let bm='single',ov='auto',manualAz=false,lastSig='';
+const HP=['#0f766e','#d97706','#475569','#b45309'],cp=p=>[Math.max(-.85,Math.min(.85,p[0])),Math.max(-.85,Math.min(.85,p[1])),Math.max(-H*.8,Math.min(H*.8,p[2]))];
+function snapAz(){
+  const sg=selItem+'|'+selSet+'|'+ov+'|'+JSON.stringify(hid)+'|'+JSON.stringify(data);
+  if(sg!==lastSig){lastSig=sg;manualAz=false}
+  if(manualAz)return;
+  const C=classify();if(!C)return;
+  const k=C.kind,t=(k==='fold'||k==='over')?mod(foldAx(C.P).t+180):mod(ori(C.pair?C.pair[0]:C.P).dd-90);
+  vaz=t;$('blkAz').value=Math.round(t)%360;
+}
+const foldG=fg,Zv=[0,0,1],mulv=(v,k)=>v.map(x=>x*k);
+const NAMES={fold:'Fold',over:'Overturned Fold',fault:'Fault Offset',unc:'Angular Unconformity / Strata Change',tilt:'Homocline (uniformly tilted)'};
+const nO=(d,dd)=>[Math.sin(dd*D)*Math.sin(d*D),Math.cos(dd*D)*Math.sin(d*D),Math.cos(d*D)];
+const tD=(d,dd)=>[Math.sin(dd*D)*Math.cos(d*D),Math.cos(dd*D)*Math.cos(d*D),-Math.sin(d*D)];
+const bas=n=>{let u=cross(n,Zv);u=Math.hypot(u[0],u[1],u[2])<1e-3?[1,0,0]:nrm(u);return[u,nrm(cross(n,u))]};
+const pAt=(n,k)=>{const b=bas(n);return[[-1,-1],[1,-1],[1,1],[-1,1]].map(s=>n.map((c,i)=>c*k+3*s[0]*b[0][i]+3*s[1]*b[1][i]))};
+const keep=(p,n,k,up)=>up?clip(p,n.map(x=>-x),-k):clip(p,n,k);
+const inB=p=>{for(const b of BOUNDS){if(p.length<3)return[];p=clip(p,b[0],b[1])}return p.length>2?p:[]};
+const seg=(a,b)=>{let t0=0,t1=1;for(const q of BOUNDS){const da=dt(q[0],a)-q[1],db=dt(q[0],b)-q[1];if(da>0&&db>0)return null;if(da>0)t0=Math.max(t0,da/(da-db));else if(db>0)t1=Math.min(t1,da/(da-db))}const d=b.map((c,i)=>c-a[i]);return t0<t1?[add(a,d,t0),add(a,d,t1)]:null};
+const ori=o=>{const q=tp(o.u);return{d:90-q.p,dd:mod(q.t+180)}};
+const foldAx=o=>{const f=foldG(o);return f?f.at:{t:mod(tp(o.u).t+90),p:0}};
+const axv=a=>[Math.cos(a.p*D)*Math.sin(a.t*D),Math.cos(a.p*D)*Math.cos(a.t*D),-Math.sin(a.p*D)];
+function classify(){
+  const has=n=>!hid[n]&&data.some(d=>d.s===n&&d.k==='p');
+  let nm;
+  if(selItem!==null&&data[selItem]&&data[selItem].k==='p')nm=[data[selItem].s];
+  else if(selSet!==null)nm=[selSet];
+  else nm=[...new Set(data.map(d=>d.s))];
+  nm=nm.filter(has);if(!nm.length)return null;
+  const S=nm.map(n=>st(n)),P=S.slice().sort((a,b)=>b.n-a.n)[0],cand=S.filter(o=>o.type!=='girdle');
+  let pair=null;
+  for(let i=0;i<cand.length&&!pair;i++)for(let j=i+1;j<cand.length;j++){let a=cand[i].u,b=cand[j].u;if(dt(a,b)<0)b=b.map(x=>-x);if(ang(a,b)>15){pair=[cand[i],cand[j]];break}}
+  const q=P.P.map(d=>({x:d.x,b:d.b,dd:mod(d.a+90)}));
+  if(q.every(r=>isFinite(r.x)))q.sort((a,b)=>a.x-b.x);
+  const jm=q.slice(1).map((r,i)=>Math.abs(r.b-q[i].b)),mj=jm.length?Math.max(...jm):0,sj=jm.slice().sort((a,b)=>a-b),mdn=sj.length?sj[sj.length>>1]:0;
+  const jump=mj>=25&&(jm.length<3||mj>3*Math.max(mdn,3)),jf=jm.length?(jm.indexOf(mj)+.5)/jm.length:.5;
+  const sn=q.reduce((s,r)=>s+Math.sin(r.dd*D),0),cn=q.reduce((s,r)=>s+Math.cos(r.dd*D),0),mdd=mod(Math.atan2(sn,cn)/D);
+  const opp=q.filter(r=>Math.abs(((r.dd-mdd+540)%360)-180)>90).length,rev=P.mean>=8&&Math.min(opp,q.length-opp)/q.length>=.15;
+  const auto=pair?'unc':rev?'fold':jump?'fault':(P.type==='girdle'&&P.mx>=50&&P.mx-P.mn>=15)?'over':P.type==='girdle'?'fold':'tilt';
+  return{kind:ov==='auto'?auto:ov,P,S,pair,mj,mdd,jf};
+}
+function STRUCT(X){
+  const C=classify();if(!C)return null;
+  const T=X.T,g=X.g,poly=X.poly,items=[],A=[],Ln=[],Lb=[],P=C.P,K=C.kind,OL='#1e293b',hc=j=>HP[((j%4)+4)%4],pc=hc(0),prof=(F,n)=>{let q=null;for(let i=0;i<=n;i++){const s=F(i);if(q&&s){Ln.push([q[0],s[0],OL,[],1.2]);Ln.push([q[1],s[1],OL,[],1.2])}q=s}};
+  const dsf=p=>p.reduce((s,v)=>s+(-v[0]*X.sa+v[1]*X.ca),0)/p.length;
+  const put=(p,col,al,o)=>{p=inB(p);if(p.length>2)items.push(Object.assign({p,col,al,d:dsf(p)},o))};
+  const lb=(s,p,dx,dy,c)=>Lb.push({s,p:cp(p),dx,dy,c:c||X.fg}),
+  tick=(cand,Cc)=>{const fx=P.P.every(d=>isFinite(d.x)),q=P.P.map((d,i)=>({d,x:fx?d.x:i})).sort((a,b)=>a.x-b.x),ok=cand.filter(p=>Math.abs(p[0])<=.85&&Math.abs(p[1])<=.85&&Math.abs(p[2])<=H*.8);
+    if(!ok.length)return;
+    q.forEach((r,k)=>{const p=ok[Math.round(k*(ok.length-1)/Math.max(1,q.length-1))],dd=(r.d.a+90)*D,sg=Math.sign(Cc[0]*Math.sin(dd)+Cc[1]*Math.cos(dd))||1,b=r.d.b*D,tv=[Cc[0]*sg*Math.cos(b),Cc[1]*sg*Math.cos(b),-Math.sin(b)];
+      Ln.push([add(p,tv,-.13),add(p,tv,.13),'#e11d48',[],3.2]);if(q.length<=8)lb(f0(r.d.b)+'°',p,14,-14,'#e11d48')})};
+  const al=j=>j%2?.3:.5,fmt=o=>pad(mod(o.dd-90))+'/'+f0(o.d)+' '+cmp(o.dd);
+  let det='';
+  if(K==='tilt'){
+    const o=ori(P),n=nO(o.d,o.dd),t=tD(o.d,o.dd),sv=[-Math.cos(o.dd*D),Math.sin(o.dd*D),0];
+   for(let j=-5;j<=5;j++)put(pAt(n,j*.3),hc(j),.6,{e:OL,lw:1.2});
+    A.push([mulv(t,-.25),mulv(t,.4),X.fg,3]);
+    const bn=C.S.length===2?[C.S[0].nm,C.S[1].nm]:['Bed 1','Bed 2'];lb(bn[0],add(mulv(n,-.3),sv,.4),-55,-26,hc(-1));lb(bn[1],add(mulv(n,.3),sv,.4),-55,26,hc(1));
+    lb('Dip '+f0(o.d)+'° '+cmp(o.dd),mulv(t,.4),45,24);
+    det=fmt(o)+' · '+P.n+' readings';
+  }else if(K==='fold'){
+    const ax=foldAx(P),a3=axv(ax),Cc=[Math.cos(ax.t*D),-Math.sin(ax.t*D),0],lm=x=>Math.min(78,Math.max(6,x)),av=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null;
+    let dp=av(P.P.filter(d=>Math.cos((d.a-ax.t)*D)>0).map(d=>d.b)),dm=av(P.P.filter(d=>Math.cos((d.a-ax.t)*D)<=0).map(d=>d.b));
+    if(dp==null)dp=dm;if(dm==null)dm=dp;dp=lm(dp);dm=lm(dm);
+    const tB=Math.tan(dp*D),tA=Math.tan(dm*D),w=.5,zf=c=>-(tB-tA)/2*c-(tB+tA)/2*w*Math.log(Math.cosh(c/w));
+    const Pt=(a,c,z)=>[a*a3[0]+c*Cc[0],a*a3[1]+c*Cc[1],a*a3[2]+z];
+    for(let j=-3;j<=3;j++){const off=j*.35;
+      for(let i=0;i<48;i++){const c0=-3+i*.125,c1=c0+.125,z0=zf(c0)+off,z1=zf(c1)+off,sl=(z1-z0)/.125;
+        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],hc(j),.6,{sh:sl>0?['#000',Math.min(.35,sl*.2)]:['#fff',Math.min(.35,-sl*.2)]});}prof(i=>{const c=-3+i*.125,z=zf(c)+off;return seg(Pt(-3,c,z),Pt(3,c,z))},48);}
+    const s=seg(Pt(-3,0,0),Pt(3,0,0));
+    if(s){Ln.push([s[0],s[1],'#dc2626',[7,4],2.2]);lb('Fold Axis '+pad(ax.t)+'/'+f0(ax.p),s[1],-30,-30,'#dc2626')}
+    lb('Limb '+f0(dp)+'°',Pt(0,1.1,zf(1.1)),38,-30);lb('Limb '+f0(dm)+'°',Pt(0,-1.1,zf(-1.1)),-38,-30);
+    tick([...Array(41)].map((_,i)=>{const c=-1+i*.05;return Pt(0,c,zf(c))}),Cc);lb('Bed 1',Pt(0,-.3,zf(-.3)-.35),-52,30,hc(-1));lb('Bed 2',Pt(0,.3,zf(.3)),52,-30,hc(0));const gg=foldG(P);
+    det='axis '+pad(ax.t)+'/'+f0(ax.p)+' · limbs '+f0(dm)+'° / '+f0(dp)+'° ('+(Math.abs(dp-dm)>10?'asymmetric':'symmetric')+')'+(gg&&gg.il!=null?' · interlimb '+f0(gg.il)+'°':'');
+  }else if(K==='over'){
+    const ax=foldAx(P),a3=axv(ax),hd=[Math.sin(C.mdd*D),Math.cos(C.mdd*D),0];
+    let Cc=[Math.cos(ax.t*D),-Math.sin(ax.t*D),0];if(dt(Cc,hd)<0)Cc=Cc.map(x=>-x);
+    const om=2.6,Aa=.38,Bb=.77,cs0=s=>s+Bb*Math.sin(om*s)-.3,zs=s=>Aa*Math.sin(om*s),Pt=(a,c,z)=>[a*a3[0]+c*Cc[0],a*a3[1]+c*Cc[1],a*a3[2]+z];
+    const ns=56,s0=-1.9,dd_=3.8/ns;
+    for(let j=-1;j<=1;j++){const off=j*.4;
+      for(let i=0;i<ns;i++){const u=s0+i*dd_,v=u+dd_,m=u+dd_/2,c0=cs0(u),c1=cs0(v),z0=zs(u)+off,z1=zs(v)+off,tc=1+Bb*om*Math.cos(om*m),tz=Aa*om*Math.cos(om*m),l=(-tz*.5+tc*.85)/Math.hypot(tc,tz);
+        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],hc(j),.6,{sh:l>.3?['#fff',Math.min(.3,(l-.3)*.4)]:['#000',Math.min(.35,(.3-l)*.4)]});}prof(i=>{const u=s0+i*dd_,c=cs0(u),z=zs(u)+off;return seg(Pt(-3,c,z),Pt(3,c,z))},ns);}
+    const sc_=Math.PI/2/om,st_=3*Math.PI/2/om,cr=[cs0(sc_),zs(sc_)],tr=[cs0(st_),zs(st_)],dc=[cr[0]-tr[0],cr[1]-tr[1]],tp_=[cr[0]+dc[0]*.3,cr[1]+dc[1]*.3],bt=[tr[0]-dc[0]*.3,tr[1]-dc[1]*.3];
+    put([Pt(-3,tp_[0],tp_[1]),Pt(3,tp_[0],tp_[1]),Pt(3,bt[0],bt[1]),Pt(-3,bt[0],bt[1])],'#f59e0b',.18,{e:'#f59e0b',lw:1.6,dash:[6,4]});
+    lb('Axial Plane',Pt(0,tp_[0],tp_[1]),-10,-32,'#f59e0b');
+    lb('Normal Limb '+f0(P.mn)+'°',Pt(0,cs0(0),zs(0)),-50,28);
+    lb('Overturned Limb '+f0(P.mx)+'°',Pt(0,cs0(Math.PI/om),0),52,30);
+    tick([...Array(61)].map((_,i)=>{const u=-1.9+i*.0633;return Pt(0,cs0(u),zs(u))}),Cc);lb('Bed 1',Pt(0,cs0(.5),zs(.5)-.4),50,40,hc(-1));lb('Bed 2',Pt(0,cs0(.5),zs(.5)+.4),50,-40,hc(1));
+    det='axis '+pad(ax.t)+'/'+f0(ax.p)+' · dips '+f0(P.mn)+'°–'+f0(P.mx)+'° same direction';
+  }else if(K==='fault'){
+    const o=ori(P),n=nO(o.d,o.dd),tb=tD(o.d,o.dd),fd=mod(o.dd+180),nf=nO(65,fd),tf=tD(65,fd),sv=[-Math.cos(fd*D),Math.sin(fd*D),0],Th=Math.min(.6,Math.max(.12,C.mj/90*.9)),uh=[Math.sin(o.dd*D),Math.cos(o.dd*D),0],kf=(C.jf-.5)*1.6*dot(nf,uh),B0=mulv(nf,kf);
+    for(let j=-5;j<=5;j++){
+      put(keep(pAt(n,j*.3),nf,kf,false),hc(j),.6,{e:OL,lw:1.2});
+      put(keep(pAt(n,j*.3-Th*n[2]),nf,kf,true),hc(j),.6,{e:OL,lw:1.2});
+    }
+    put(pAt(nf,kf),'#dc2626',.22,{e:'#dc2626',lw:1.6});
+    const hp=add(add(mulv(sv,.5),tf,-.1),B0,1),hq=add(add(mulv(sv,.5),tf,.35),B0,1),fp=add(add(mulv(sv,-.5),tf,.1),B0,1),fq=add(add(mulv(sv,-.5),tf,-.35),B0,1);
+    A.push([hp,hq,'#dc2626',3],[fp,fq,'#dc2626',3]);
+    lb('Fault Plane',add(B0,tf,-.55),-45,-30,'#dc2626');
+    lb('Offset Strata',add(mulv(n,-Th*n[2]),tb,-.7),-48,-26);
+    lb('Slip',hq,42,20,'#dc2626');lb('Bed 1',mulv(n,-.3),-50,30,hc(-1));lb('Bed 2',mulv(n,.3),50,-30,hc(1));
+    det='beds '+fmt(o)+' · throw ≈ '+Th.toFixed(2)+' units · break at '+f0(C.jf*100)+'% of traverse · dip jump '+f0(C.mj)+'°';
+  }else{
+    const pr=C.pair||(C.S.length>1?[C.S[0],C.S[1]]:[P,null]),oa=ori(pr[0]),ob=pr[1]?ori(pr[1]):{d:0,dd:0};
+    let lo=oa,up=ob,lc=pr[0],uc=pr[1];if(ob.d>oa.d){lo=ob;up=oa;lc=pr[1];uc=pr[0]}
+    const nl=nO(lo.d,lo.dd),nu=nO(up.d,up.dd);
+    for(let j=-5;j<=5;j++)put(keep(pAt(nl,j*.3),nu,0,false),hc(j),.6,{e:OL,lw:1.2});
+    for(let j=1;j<=5;j++)put(pAt(nu,j*.22),hc(j+1),.6,{e:OL,lw:1.2});
+    put(pAt(nu,0),'#dc2626',.15,{e:'#dc2626',lw:2.6,dash:[8,4]});
+    lb('Unconformity',mulv(bas(nu)[0],.5),-52,-30,'#dc2626');
+    lb((uc?uc.nm:'Upper Strata')+' '+f0(up.d)+'°',mulv(nu,.45),50,-28);
+    lb((pr[1]?lc.nm:'Lower Strata')+' '+f0(lo.d)+'°',mulv(nl,-.5),-50,28);
+    det='lower '+fmt(lo)+' / upper '+fmt(up)+' · angle '+f0(ang(nl,nu))+'°';
+  }
+  items.sort((a,b)=>b.d-a.d).forEach(o=>{const q=o.p.map(T);poly(q,o.col,o.al,o.e||null,o.lw||1,o.dash);if(o.sh)poly(q,o.sh[0],o.sh[1])});
+  return{info:NAMES[K]+(ov==='auto'?' (auto)':'')+' · '+det,lab(){
+    Ln.forEach(l=>{const a=T(l[0]),b=T(l[1]);g.setLineDash(l[3]);g.strokeStyle=l[2];g.lineWidth=l[4];g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();g.setLineDash([])});
+    A.forEach(a=>X.arrow(T(a[0]),T(a[1]),a[2],a[3]));
+    g.font='700 11px system-ui';g.textAlign='center';g.textBaseline='middle';
+    Lb.forEach(l=>{const a=T(l.p),w=g.measureText(l.s).width+10,x=Math.max(w/2+2,Math.min(X.W-w/2-2,a[0]+l.dx)),y=Math.max(10,Math.min(X.H-10,a[1]+l.dy));
+      g.strokeStyle=l.c;g.fillStyle=l.c;g.lineWidth=1.2;g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(x,y);g.stroke();
+      g.beginPath();g.arc(a[0],a[1],2.5,0,7);g.fill();
+      g.globalAlpha=.93;g.fillStyle=X.card;g.fillRect(x-w/2,y-9,w,18);g.globalAlpha=1;
+      g.lineWidth=1;g.strokeRect(x-w/2,y-9,w,18);g.fillStyle=X.fg;g.fillText(l.s,x,y)});
+    g.textAlign='left';g.lineWidth=3;g.strokeStyle=X.card;g.strokeText(NAMES[K],8,14);g.fillStyle=X.fg;g.fillText(NAMES[K],8,14);
+  }};
+}
+function render(){
+  if(!on)return;
+  if(bm==='struct')snapAz();const W=cv3.clientWidth;if(!W)return;
+  const Hc=Math.round(W*.75),dpr=window.devicePixelRatio||1,a=vaz*D,ca=Math.cos(a),sa=Math.sin(a);
+  cv3.width=W*dpr;cv3.height=Hc*dpr;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,Hc);
+  const pr=v=>[v[0]*ca+v[1]*sa,v[2]*Math.cos(EL)+(-v[0]*sa+v[1]*ca)*Math.sin(EL)];
+  const cn=[];for(const x of[-1,1])for(const y of[-1,1])for(const z of[-H,H])cn.push(pr([x,y,z]));
+  const xs=cn.map(p=>p[0]),ys=cn.map(p=>p[1]),x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const sc=Math.min((W-24)/(x1-x0),(Hc-24)/(y1-y0)),ox=W/2-(x0+x1)/2*sc,oy=Hc/2+(y0+y1)/2*sc;
+  const T=v=>{const p=pr(v);return[ox+p[0]*sc,oy-p[1]*sc]};
+  const fg=cs('--fg'),card=cs('--card'),ac=cs('--acc');
+  const poly=(pts,fill,al,stroke,lw,dash)=>{
+    g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();
+    if(fill){g.globalAlpha=al;g.fillStyle=fill;g.fill();g.globalAlpha=1}
+    if(stroke){g.setLineDash(dash||[]);g.strokeStyle=stroke;g.lineWidth=lw||1;g.stroke();g.setLineDash([])}
+  };
+  const arrow=(p,q,col,lw)=>{
+    const t=Math.atan2(q[1]-p[1],q[0]-p[0]),h=9;
+    g.strokeStyle=col;g.fillStyle=col;g.lineWidth=lw;g.lineCap='round';
+    g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1]);g.stroke();
+    g.beginPath();g.moveTo(q[0],q[1]);g.lineTo(q[0]-h*Math.cos(t-.4),q[1]-h*Math.sin(t-.4));g.lineTo(q[0]-h*Math.cos(t+.4),q[1]-h*Math.sin(t+.4));g.closePath();g.fill();
+  };
+  const label=(s,p,col)=>{g.font='700 12px system-ui';g.textAlign='center';g.textBaseline='middle';g.lineWidth=3;g.strokeStyle=card;g.strokeText(s,p[0],p[1]);g.fillStyle=col;g.fillText(s,p[0],p[1])};
+  const nw=f=>-f.n[0]*sa+f.n[1]*ca;
+  const act=activePlane();
+  // back faces
+  FACES.filter(f=>nw(f)>0).forEach(f=>poly(f.v.map(T),fg,.07,fg,.8,[4,3]));
+   // plane
+  let pc=null,sv,dv;
+  const SV=bm==='struct'?STRUCT({T,poly,arrow,g,fg,card,sa,ca,W,H:Hc}):null;
+  if(act&&!SV){
+    const s=act.d.a,d=act.d.b,dd=s+90;
+    sv=[Math.sin(s*D),Math.cos(s*D),0];
+    dv=[Math.sin(dd*D)*Math.cos(d*D),Math.cos(dd*D)*Math.cos(d*D),-Math.sin(d*D)];
+    pc=colorOf(act.d.s);
+    let q=[add(add([0,0,0],sv,-4),dv,-4),add(add([0,0,0],sv,4),dv,-4),add(add([0,0,0],sv,4),dv,4),add(add([0,0,0],sv,-4),dv,4)];
+    BOUNDS.forEach(b=>{if(q.length)q=clip(q,b[0],b[1])});
+    if(q.length>2)poly(q.map(T),pc,.6,pc,2.2);
+  }
+  // front faces + top
+  FACES.filter(f=>nw(f)<=0).forEach(f=>poly(f.v.map(T),fg,f.n[2]?.1:.04,fg,1.4));
+  // north arrow on top surface
+  arrow(T([-.72,-.72,H]),T([-.72,-.2,H]),'#dc2626',2.4);label('N',T([-.72,-.02,H]),'#dc2626');
+  if(SV){SV.lab();$('blkInfo').textContent=SV.info}
+  else if(act){
+    // strike line + dip arrow on the plane
+    g.setLineDash([5,4]);g.strokeStyle=fg;g.lineWidth=1.2;g.beginPath();
+    const s0=T(add([0,0,0],sv,-.6)),s1=T(add([0,0,0],sv,.6));g.moveTo(s0[0],s0[1]);g.lineTo(s1[0],s1[1]);g.stroke();g.setLineDash([]);
+    arrow(T(add([0,0,0],dv,-.1)),T(add([0,0,0],dv,.5)),fg,3);
+    label(Math.round(act.d.b)+'°',T(add([0,0,0],dv,.68)),fg);
+    label('strike',T(add([0,0,0],sv,.78)),cs('--mute'));
+    $('blkInfo').textContent='#'+(act.i+1)+' · '+lab(act.d)+' · dip direction '+pad(act.d.a+90)+'°';
+  }else $('blkInfo').textContent='Add or select a plane to see it in the block.';
+}
+$('blkBtn').onclick=()=>{
+  on=!on;$('blkWrap').hidden=!on;$('blkBtn').textContent=on?'Hide 3D Block':'Show 3D Block';
+  if(on)render();
+};
+$('blkAz').oninput=e=>{vaz=+e.target.value;manualAz=true;render()};
+$('blkMode').onclick=e=>{const m=e.target.dataset.bm;if(!m)return;bm=m;manualAz=false;lastSig='';document.querySelectorAll('#blkMode button').forEach(b=>b.classList.toggle('on',b.dataset.bm===m));$('blkOvRow').style.display=m==='struct'?'flex':'none';render()};
+$('blkOv').onchange=e=>{ov=e.target.value;render()};
+addEventListener('resize',render);
+// live sync: every add / select / delete / bake / sample already calls draw()
+const d0=window.draw;
+window.draw=function(){d0.apply(this,arguments);try{render()}catch(e){}};
+window.__blk={render};
+})();
+})();
