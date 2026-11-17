@@ -306,7 +306,16 @@ function activePlane(){
   return null;
 }
 // ---------- Stage 1.5: auto-diagnostic structure view ----------
-let bm='single',ov='auto';
+let bm='single',ov='auto',manualAz=false,lastSig='';
+const HP=['#0f766e','#d97706','#475569','#b45309'],cp=p=>[Math.max(-.85,Math.min(.85,p[0])),Math.max(-.85,Math.min(.85,p[1])),Math.max(-H*.8,Math.min(H*.8,p[2]))];
+function snapAz(){
+  const sg=selItem+'|'+selSet+'|'+ov+'|'+JSON.stringify(hid)+'|'+JSON.stringify(data);
+  if(sg!==lastSig){lastSig=sg;manualAz=false}
+  if(manualAz)return;
+  const C=classify();if(!C)return;
+  const k=C.kind,t=(k==='fold'||k==='over')?mod(foldAx(C.P).t+180):mod(ori(C.pair?C.pair[0]:C.P).dd-90);
+  vaz=t;$('blkAz').value=Math.round(t)%360;
+}
 const foldG=fg,Zv=[0,0,1],mulv=(v,k)=>v.map(x=>x*k);
 const NAMES={fold:'Fold',over:'Overturned Fold',fault:'Fault Offset',unc:'Angular Unconformity / Strata Change',tilt:'Homocline (uniformly tilted)'};
 const nO=(d,dd)=>[Math.sin(dd*D)*Math.sin(d*D),Math.cos(dd*D)*Math.sin(d*D),Math.cos(d*D)];
@@ -332,7 +341,7 @@ function classify(){
   const q=P.P.map(d=>({x:d.x,b:d.b,dd:mod(d.a+90)}));
   if(q.every(r=>isFinite(r.x)))q.sort((a,b)=>a.x-b.x);
   const jm=q.slice(1).map((r,i)=>Math.abs(r.b-q[i].b)),mj=jm.length?Math.max(...jm):0,sj=jm.slice().sort((a,b)=>a-b),mdn=sj.length?sj[sj.length>>1]:0;
-  const jump=mj>=25&&(jm.length<3||mj>3*Math.max(mdn,3));
+ const jump=mj>=25&&(jm.length<3||mj>3*Math.max(mdn,3)),jf=jm.length?(jm.indexOf(mj)+.5)/jm.length:.5;
   const sn=q.reduce((s,r)=>s+Math.sin(r.dd*D),0),cn=q.reduce((s,r)=>s+Math.cos(r.dd*D),0),mdd=mod(Math.atan2(sn,cn)/D);
   const opp=q.filter(r=>Math.abs(((r.dd-mdd+540)%360)-180)>90).length,rev=P.mean>=8&&Math.min(opp,q.length-opp)/q.length>=.15;
   const auto=pair?'unc':rev?'fold':jump?'fault':(P.type==='girdle'&&P.mx>=50&&P.mx-P.mn>=15)?'over':P.type==='girdle'?'fold':'tilt';
@@ -340,17 +349,21 @@ function classify(){
 }
 function STRUCT(X){
   const C=classify();if(!C)return null;
-  const T=X.T,g=X.g,poly=X.poly,items=[],A=[],Ln=[],Lb=[],P=C.P,K=C.kind,pc=colorOf(P.nm);
+  const T=X.T,g=X.g,poly=X.poly,items=[],A=[],Ln=[],Lb=[],K=C.kind,OL='#1e293b',hc=j=>HP[((j%4)+4)%4],pc=hc(0),prof=(F,n)=>{let q=null;for(let i=0;i<=n;i++){const s=F(i);if(q&&s){Ln.push([q[0],s[0],OL,[],1.2]);Ln.push([q[1],s[1],OL,[],1.2])}q=s}};
   const dsf=p=>p.reduce((s,v)=>s+(-v[0]*X.sa+v[1]*X.ca),0)/p.length;
   const put=(p,col,al,o)=>{p=inB(p);if(p.length>2)items.push(Object.assign({p,col,al,d:dsf(p)},o))};
-  const lb=(s,p,dx,dy,c)=>Lb.push({s,p,dx,dy,c:c||X.fg});
+  const lb=(s,p,dx,dy,c)=>Lb.push({s,p:cp(p),dx,dy,c:c||X.fg}),
+  tick=(cand,Cc)=>{const fx=P.P.every(d=>isFinite(d.x)),q=P.P.map((d,i)=>({d,x:fx?d.x:i})).sort((a,b)=>a.x-b.x),ok=cand.filter(p=>Math.abs(p[0])<=.85&&Math.abs(p[1])<=.85&&Math.abs(p[2])<=H*.8);
+    if(!ok.length)return;
+    q.forEach((r,k)=>{const p=ok[Math.round(k*(ok.length-1)/Math.max(1,q.length-1))],dd=(r.d.a+90)*D,sg=Math.sign(Cc[0]*Math.sin(dd)+Cc[1]*Math.cos(dd))||1,b=r.d.b*D,tv=[Cc[0]*sg*Math.cos(b),Cc[1]*sg*Math.cos(b),-Math.sin(b)];
+      Ln.push([add(p,tv,-.13),add(p,tv,.13),'#e11d48',[],3.2]);if(q.length<=8)lb(f0(r.d.b)+'°',p,14,-14,'#e11d48')})};
   const al=j=>j%2?.3:.5,fmt=o=>pad(mod(o.dd-90))+'/'+f0(o.d)+' '+cmp(o.dd);
   let det='';
   if(K==='tilt'){
     const o=ori(P),n=nO(o.d,o.dd),t=tD(o.d,o.dd),sv=[-Math.cos(o.dd*D),Math.sin(o.dd*D),0];
-    for(let j=-5;j<=5;j++)put(pAt(n,j*.3),pc,al(j),{e:pc});
+   for(let j=-5;j<=5;j++)put(pAt(n,j*.3),hc(j),.6,{e:OL,lw:1.2});
     A.push([mulv(t,-.25),mulv(t,.4),X.fg,3]);
-    lb('Strata',mulv(sv,.4),-55,-26);
+    const bn=C.S.length===2?[C.S[0].nm,C.S[1].nm]:['Bed 1','Bed 2'];lb(bn[0],add(mulv(n,-.3),sv,.4),-55,-26,hc(-1));lb(bn[1],add(mulv(n,.3),sv,.4),-55,26,hc(1));
     lb('Dip '+f0(o.d)+'° '+cmp(o.dd),mulv(t,.4),45,24);
     det=fmt(o)+' · '+P.n+' readings';
   }else if(K==='fold'){
@@ -361,12 +374,12 @@ function STRUCT(X){
     const Pt=(a,c,z)=>[a*a3[0]+c*Cc[0],a*a3[1]+c*Cc[1],a*a3[2]+z];
     for(let j=-3;j<=3;j++){const off=j*.35;
       for(let i=0;i<48;i++){const c0=-3+i*.125,c1=c0+.125,z0=zf(c0)+off,z1=zf(c1)+off,sl=(z1-z0)/.125;
-        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],pc,j?.22:.7,j?null:{sh:sl>0?['#000',Math.min(.35,sl*.2)]:['#fff',Math.min(.35,-sl*.2)]});}}
+        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],hc(j),.6,{sh:sl>0?['#000',Math.min(.35,sl*.2)]:['#fff',Math.min(.35,-sl*.2)]});}prof(i=>{const c=-3+i*.125,z=zf(c)+off;return seg(Pt(-3,c,z),Pt(3,c,z))},48);}
     const s=seg(Pt(-3,0,0),Pt(3,0,0));
     if(s){Ln.push([s[0],s[1],'#dc2626',[7,4],2.2]);lb('Fold Axis '+pad(ax.t)+'/'+f0(ax.p),s[1],-30,-30,'#dc2626')}
     lb('Limb '+f0(dp)+'°',Pt(0,1.1,zf(1.1)),38,-30);lb('Limb '+f0(dm)+'°',Pt(0,-1.1,zf(-1.1)),-38,-30);
-    const gg=foldG(P);
-    det='axis '+pad(ax.t)+'/'+f0(ax.p)+' · limbs '+f0(dm)+'° / '+f0(dp)+'°'+(gg&&gg.il!=null?' · interlimb '+f0(gg.il)+'°':'');
+    tick([...Array(41)].map((_,i)=>{const c=-1+i*.05;return Pt(0,c,zf(c))}),Cc);lb('Bed 1',Pt(0,-.3,zf(-.3)-.35),-52,30,hc(-1));lb('Bed 2',Pt(0,.3,zf(.3)),52,-30,hc(0));const gg=foldG(P);
+    det='axis '+pad(ax.t)+'/'+f0(ax.p)+' · limbs '+f0(dm)+'° / '+f0(dp)+'° ('+(Math.abs(dp-dm)>10?'asymmetric':'symmetric')+')'+(gg&&gg.il!=null?' · interlimb '+f0(gg.il)+'°':'');
   }else if(K==='over'){
     const ax=foldAx(P),a3=axv(ax),hd=[Math.sin(C.mdd*D),Math.cos(C.mdd*D),0];
     let Cc=[Math.cos(ax.t*D),-Math.sin(ax.t*D),0];if(dt(Cc,hd)<0)Cc=Cc.map(x=>-x);
@@ -374,36 +387,37 @@ function STRUCT(X){
     const ns=56,s0=-1.9,dd_=3.8/ns;
     for(let j=-1;j<=1;j++){const off=j*.4;
       for(let i=0;i<ns;i++){const u=s0+i*dd_,v=u+dd_,m=u+dd_/2,c0=cs0(u),c1=cs0(v),z0=zs(u)+off,z1=zs(v)+off,tc=1+Bb*om*Math.cos(om*m),tz=Aa*om*Math.cos(om*m),l=(-tz*.5+tc*.85)/Math.hypot(tc,tz);
-        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],pc,j?.22:.7,j?null:{sh:l>.3?['#fff',Math.min(.3,(l-.3)*.4)]:['#000',Math.min(.35,(.3-l)*.4)]});}}
+        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],hc(j),.6,{sh:l>.3?['#fff',Math.min(.3,(l-.3)*.4)]:['#000',Math.min(.35,(.3-l)*.4)]});}prof(i=>{const u=s0+i*dd_,c=cs0(u),z=zs(u)+off;return seg(Pt(-3,c,z),Pt(3,c,z))},ns);}
     const sc_=Math.PI/2/om,st_=3*Math.PI/2/om,cr=[cs0(sc_),zs(sc_)],tr=[cs0(st_),zs(st_)],dc=[cr[0]-tr[0],cr[1]-tr[1]],tp_=[cr[0]+dc[0]*.3,cr[1]+dc[1]*.3],bt=[tr[0]-dc[0]*.3,tr[1]-dc[1]*.3];
     put([Pt(-3,tp_[0],tp_[1]),Pt(3,tp_[0],tp_[1]),Pt(3,bt[0],bt[1]),Pt(-3,bt[0],bt[1])],'#f59e0b',.18,{e:'#f59e0b',lw:1.6,dash:[6,4]});
     lb('Axial Plane',Pt(0,tp_[0],tp_[1]),-10,-32,'#f59e0b');
     lb('Normal Limb '+f0(P.mn)+'°',Pt(0,cs0(0),zs(0)),-50,28);
     lb('Overturned Limb '+f0(P.mx)+'°',Pt(0,cs0(Math.PI/om),0),52,30);
+    tick([...Array(61)].map((_,i)=>{const u=-1.9+i*.0633;return Pt(0,cs0(u),zs(u))}),Cc);lb('Bed 1',Pt(0,cs0(.5),zs(.5)-.4),50,40,hc(-1));lb('Bed 2',Pt(0,cs0(.5),zs(.5)+.4),50,-40,hc(1));
     det='axis '+pad(ax.t)+'/'+f0(ax.p)+' · dips '+f0(P.mn)+'°–'+f0(P.mx)+'° same direction';
   }else if(K==='fault'){
     const o=ori(P),n=nO(o.d,o.dd),tb=tD(o.d,o.dd),fd=mod(o.dd+180),nf=nO(65,fd),tf=tD(65,fd),sv=[-Math.cos(fd*D),Math.sin(fd*D),0],Th=Math.min(.5,Math.max(.25,C.mj/90*.8));
     for(let j=-5;j<=5;j++){
-      put(keep(pAt(n,j*.3),nf,0,false),pc,al(j),{e:pc});
-      put(keep(pAt(n,j*.3-Th*n[2]),nf,0,true),pc,al(j),{e:pc});
+      put(keep(pAt(n,j*.3),nf,kf,false),hc(j),.6,{e:OL,lw:1.2});
+      put(keep(pAt(n,j*.3-Th*n[2]),nf,kf,true),hc(j),.6,{e:OL,lw:1.2});
     }
-    put(pAt(nf,0),'#dc2626',.22,{e:'#dc2626',lw:1.6});
-    const hp=add(mulv(sv,.5),tf,-.1),hq=add(mulv(sv,.5),tf,.35),fp=add(mulv(sv,-.5),tf,.1),fq=add(mulv(sv,-.5),tf,-.35);
+    put(pAt(nf,kf),'#dc2626',.22,{e:'#dc2626',lw:1.6});
+    const hp=add(add(mulv(sv,.5),tf,-.1),B0,1),hq=add(add(mulv(sv,.5),tf,.35),B0,1),fp=add(add(mulv(sv,-.5),tf,.1),B0,1),fq=add(add(mulv(sv,-.5),tf,-.35),B0,1);
     A.push([hp,hq,'#dc2626',3],[fp,fq,'#dc2626',3]);
-    lb('Fault Plane',mulv(tf,-.55),-45,-30,'#dc2626');
+    lb('Fault Plane',add(B0,tf,-.55),-45,-30,'#dc2626');
     lb('Offset Strata',add(mulv(n,-Th*n[2]),tb,-.7),-48,-26);
-    lb('Slip',hq,42,20,'#dc2626');
-    det='beds '+fmt(o)+' · throw ≈ '+Th.toFixed(2)+' units · dip jump '+f0(C.mj)+'°';
+    lb('Slip',hq,42,20,'#dc2626');lb('Bed 1',mulv(n,-.3),-50,30,hc(-1));lb('Bed 2',mulv(n,.3),50,-30,hc(1));
+    det='beds '+fmt(o)+' · throw ≈ '+Th.toFixed(2)+' units · break at '+f0(C.jf*100)+'% of traverse · dip jump '+f0(C.mj)+'°';
   }else{
     const pr=C.pair||(C.S.length>1?[C.S[0],C.S[1]]:[P,null]),oa=ori(pr[0]),ob=pr[1]?ori(pr[1]):{d:0,dd:0};
     let lo=oa,up=ob,lc=pr[0],uc=pr[1];if(ob.d>oa.d){lo=ob;up=oa;lc=pr[1];uc=pr[0]}
     const cl=colorOf(lc.nm),cu=uc?colorOf(uc.nm):'#94a3b8',nl=nO(lo.d,lo.dd),nu=nO(up.d,up.dd);
-    for(let j=-5;j<=5;j++)put(keep(pAt(nl,j*.3),nu,0,false),cl,al(j),{e:cl});
-    for(let j=1;j<=5;j++)put(pAt(nu,j*.22),cu,al(j),{e:cu});
+    for(let j=-5;j<=5;j++)put(keep(pAt(nl,j*.3),nu,0,false),hc(j),.6,{e:OL,lw:1.2});
+    for(let j=1;j<=5;j++)put(pAt(nu,j*.22),hc(j+1),.6,{e:OL,lw:1.2});
     put(pAt(nu,0),'#dc2626',.15,{e:'#dc2626',lw:2.6,dash:[8,4]});
     lb('Unconformity',mulv(bas(nu)[0],.5),-52,-30,'#dc2626');
-    lb('Younger beds '+f0(up.d)+'°',mulv(nu,.45),50,-28);
-    lb('Older beds '+f0(lo.d)+'°',mulv(nl,-.5),-50,28);
+    lb((uc?uc.nm:'Upper Strata')+' '+f0(up.d)+'°',mulv(nu,.45),50,-28);
+    lb((pr[1]?lc.nm:'Lower Strata')+' '+f0(lo.d)+'°',mulv(nl,-.5),-50,28);
     det='lower '+fmt(lo)+' / upper '+fmt(up)+' · angle '+f0(ang(nl,nu))+'°';
   }
   items.sort((a,b)=>b.d-a.d).forEach(o=>{const q=o.p.map(T);poly(q,o.col,o.al,o.e||null,o.lw||1,o.dash);if(o.sh)poly(q,o.sh[0],o.sh[1])});
@@ -421,7 +435,7 @@ function STRUCT(X){
 }
 function render(){
   if(!on)return;
-  const W=cv3.clientWidth;if(!W)return;
+  if(bm==='struct')snapAz();const W=cv3.clientWidth;if(!W)return;
   const Hc=Math.round(W*.75),dpr=window.devicePixelRatio||1,a=vaz*D,ca=Math.cos(a),sa=Math.sin(a);
   cv3.width=W*dpr;cv3.height=Hc*dpr;g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,Hc);
   const pr=v=>[v[0]*ca+v[1]*sa,v[2]*Math.cos(EL)+(-v[0]*sa+v[1]*ca)*Math.sin(EL)];
@@ -477,8 +491,8 @@ $('blkBtn').onclick=()=>{
   on=!on;$('blkWrap').hidden=!on;$('blkBtn').textContent=on?'Hide 3D Block':'Show 3D Block';
   if(on)render();
 };
-$('blkAz').oninput=e=>{vaz=+e.target.value;render()};
-$('blkMode').onclick=e=>{const m=e.target.dataset.bm;if(!m)return;bm=m;document.querySelectorAll('#blkMode button').forEach(b=>b.classList.toggle('on',b.dataset.bm===m));$('blkOvRow').style.display=m==='struct'?'flex':'none';render()};
+$('blkAz').oninput=e=>{vaz=+e.target.value;manualAz=true;render()};
+$('blkMode').onclick=e=>{const m=e.target.dataset.bm;if(!m)return;bm=m;manualAz=false;lastSig='';document.querySelectorAll('#blkMode button').forEach(b=>b.classList.toggle('on',b.dataset.bm===m));$('blkOvRow').style.display=m==='struct'?'flex':'none';render()};
 $('blkOv').onchange=e=>{ov=e.target.value;render()};
 addEventListener('resize',render);
 // live sync: every add / select / delete / bake / sample already calls draw()
