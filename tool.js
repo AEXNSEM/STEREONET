@@ -314,6 +314,8 @@ function snapAz(){
   if(manualAz)return;
   const C=classify();if(!C)return;
   const k=C.kind,t=(k==='fold'||k==='over')?mod(foldAx(C.P).t+180):mod(ori(C.pair?C.pair[0]:C.P).dd-90);
+    let rel=((t%90)+90)%90;                    // angle relative to the box faces
+  if(Math.min(rel,90-rel)<20) t=Math.floor(t/90)*90+33; // force a 3/4 corner view
   vaz=t;$('blkAz').value=Math.round(t)%360;
 }
 const foldG=fg,Zv=[0,0,1],mulv=(v,k)=>v.map(x=>x*k);
@@ -361,7 +363,7 @@ function STRUCT(X){
   let det='';
   if(K==='tilt'){
     const o=ori(P),n=nO(o.d,o.dd),t=tD(o.d,o.dd),sv=[-Math.cos(o.dd*D),Math.sin(o.dd*D),0];
-   for(let j=-5;j<=5;j++)put(pAt(n,j*.3),hc(j),.6,{e:OL,lw:1.2});
+   for(let j=-5;j<=5;j++)put(pAt(n,j*.3),hc(j),1,{e:OL,lw:1.2});
     A.push([mulv(t,-.25),mulv(t,.4),X.fg,3]);
     const bn=C.S.length===2?[C.S[0].nm,C.S[1].nm]:['Bed 1','Bed 2'];lb(bn[0],add(mulv(n,-.3),sv,.4),-55,-26,hc(-1));lb(bn[1],add(mulv(n,.3),sv,.4),-55,26,hc(1));
     lb('Dip '+f0(o.d)+'° '+cmp(o.dd),mulv(t,.4),45,24);
@@ -374,7 +376,7 @@ function STRUCT(X){
     const Pt=(a,c,z)=>[a*a3[0]+c*Cc[0],a*a3[1]+c*Cc[1],a*a3[2]+z];
     for(let j=-3;j<=3;j++){const off=j*.35;
       for(let i=0;i<48;i++){const c0=-3+i*.125,c1=c0+.125,z0=zf(c0)+off,z1=zf(c1)+off,sl=(z1-z0)/.125;
-        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],hc(j),.6,{sh:sl>0?['#000',Math.min(.35,sl*.2)]:['#fff',Math.min(.35,-sl*.2)]});}prof(i=>{const c=-3+i*.125,z=zf(c)+off;return seg(Pt(-3,c,z),Pt(3,c,z))},48);}
+        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],hc(j),1,{sh:sl>0?['#000',Math.min(.35,sl*.2)]:['#fff',Math.min(.35,-sl*.2)]});}prof(i=>{const c=-3+i*.125,z=zf(c)+off;return seg(Pt(-3,c,z),Pt(3,c,z))},48);}
     const s=seg(Pt(-3,0,0),Pt(3,0,0));
     if(s){Ln.push([s[0],s[1],'#dc2626',[7,4],2.2]);lb('Fold Axis '+pad(ax.t)+'/'+f0(ax.p),s[1],-30,-30,'#dc2626')}
     lb('Limb '+f0(dp)+'°',Pt(0,1.1,zf(1.1)),38,-30);lb('Limb '+f0(dm)+'°',Pt(0,-1.1,zf(-1.1)),-38,-30);
@@ -387,7 +389,7 @@ function STRUCT(X){
     const ns=56,s0=-1.9,dd_=3.8/ns;
     for(let j=-1;j<=1;j++){const off=j*.4;
       for(let i=0;i<ns;i++){const u=s0+i*dd_,v=u+dd_,m=u+dd_/2,c0=cs0(u),c1=cs0(v),z0=zs(u)+off,z1=zs(v)+off,tc=1+Bb*om*Math.cos(om*m),tz=Aa*om*Math.cos(om*m),l=(-tz*.5+tc*.85)/Math.hypot(tc,tz);
-        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],hc(j),.6,{sh:l>.3?['#fff',Math.min(.3,(l-.3)*.4)]:['#000',Math.min(.35,(.3-l)*.4)]});}prof(i=>{const u=s0+i*dd_,c=cs0(u),z=zs(u)+off;return seg(Pt(-3,c,z),Pt(3,c,z))},ns);}
+        put([Pt(-3,c0,z0),Pt(3,c0,z0),Pt(3,c1,z1),Pt(-3,c1,z1)],hc(j),1,{sh:l>.3?['#fff',Math.min(.3,(l-.3)*.4)]:['#000',Math.min(.35,(.3-l)*.4)]});}prof(i=>{const u=s0+i*dd_,c=cs0(u),z=zs(u)+off;return seg(Pt(-3,c,z),Pt(3,c,z))},ns);}
     const sc_=Math.PI/2/om,st_=3*Math.PI/2/om,cr=[cs0(sc_),zs(sc_)],tr=[cs0(st_),zs(st_)],dc=[cr[0]-tr[0],cr[1]-tr[1]],tp_=[cr[0]+dc[0]*.3,cr[1]+dc[1]*.3],bt=[tr[0]-dc[0]*.3,tr[1]-dc[1]*.3];
     put([Pt(-3,tp_[0],tp_[1]),Pt(3,tp_[0],tp_[1]),Pt(3,bt[0],bt[1]),Pt(-3,bt[0],bt[1])],'#f59e0b',.18,{e:'#f59e0b',lw:1.6,dash:[6,4]});
     lb('Axial Plane',Pt(0,tp_[0],tp_[1]),-10,-32,'#f59e0b');
@@ -398,8 +400,8 @@ function STRUCT(X){
   }else if(K==='fault'){
     const o=ori(P),n=nO(o.d,o.dd),tb=tD(o.d,o.dd),fd=mod(o.dd+180),nf=nO(65,fd),tf=tD(65,fd),sv=[-Math.cos(fd*D),Math.sin(fd*D),0],Th=Math.min(.6,Math.max(.12,C.mj/90*.9)),uh=[Math.sin(o.dd*D),Math.cos(o.dd*D),0],kf=(C.jf-.5)*1.6*dot(nf,uh),B0=mulv(nf,kf);
     for(let j=-5;j<=5;j++){
-      put(keep(pAt(n,j*.3),nf,kf,false),hc(j),.6,{e:OL,lw:1.2});
-      put(keep(pAt(n,j*.3-Th*n[2]),nf,kf,true),hc(j),.6,{e:OL,lw:1.2});
+      put(keep(pAt(n,j*.3),nf,kf,false),hc(j),1,{e:OL,lw:1.2});
+      put(keep(pAt(n,j*.3-Th*n[2]),nf,kf,true),hc(j),1,{e:OL,lw:1.2});
     }
     put(pAt(nf,kf),'#dc2626',.22,{e:'#dc2626',lw:1.6});
     const hp=add(add(mulv(sv,.5),tf,-.1),B0,1),hq=add(add(mulv(sv,.5),tf,.35),B0,1),fp=add(add(mulv(sv,-.5),tf,.1),B0,1),fq=add(add(mulv(sv,-.5),tf,-.35),B0,1);
@@ -412,8 +414,8 @@ function STRUCT(X){
     const pr=C.pair||(C.S.length>1?[C.S[0],C.S[1]]:[P,null]),oa=ori(pr[0]),ob=pr[1]?ori(pr[1]):{d:0,dd:0};
     let lo=oa,up=ob,lc=pr[0],uc=pr[1];if(ob.d>oa.d){lo=ob;up=oa;lc=pr[1];uc=pr[0]}
     const nl=nO(lo.d,lo.dd),nu=nO(up.d,up.dd);
-    for(let j=-5;j<=5;j++)put(keep(pAt(nl,j*.3),nu,0,false),hc(j),.6,{e:OL,lw:1.2});
-    for(let j=1;j<=5;j++)put(pAt(nu,j*.22),hc(j+1),.6,{e:OL,lw:1.2});
+    for(let j=-5;j<=5;j++)put(keep(pAt(nl,j*.3),nu,0,false),hc(j),1,{e:OL,lw:1.2});
+    for(let j=1;j<=5;j++)put(pAt(nu,j*.22),hc(j+1),1,{e:OL,lw:1.2});
     put(pAt(nu,0),'#dc2626',.15,{e:'#dc2626',lw:2.6,dash:[8,4]});
     lb('Unconformity',mulv(bas(nu)[0],.5),-52,-30,'#dc2626');
     lb((uc?uc.nm:'Upper Strata')+' '+f0(up.d)+'°',mulv(nu,.45),50,-28);
@@ -425,7 +427,7 @@ function STRUCT(X){
     Ln.forEach(l=>{const a=T(l[0]),b=T(l[1]);g.setLineDash(l[3]);g.strokeStyle=l[2];g.lineWidth=l[4];g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke();g.setLineDash([])});
     A.forEach(a=>X.arrow(T(a[0]),T(a[1]),a[2],a[3]));
     g.font='700 11px system-ui';g.textAlign='center';g.textBaseline='middle';
-    Lb.forEach(l=>{const a=T(l.p),w=g.measureText(l.s).width+10,x=Math.max(w/2+2,Math.min(X.W-w/2-2,a[0]+l.dx)),y=Math.max(10,Math.min(X.H-10,a[1]+l.dy));
+    Lb.forEach(l=>{const a=T(l.p),w=g.measureText(l.s).width+10,bb=X.bx,left=a[0]<(bb[0]+bb[1])/2,x=left?Math.max(w/2+2,bb[0]-14-w/2):Math.min(X.W-w/2-2,bb[1]+14+w/2),y=Math.max(10,Math.min(X.H-10,a[1]+l.dy));
       g.strokeStyle=l.c;g.fillStyle=l.c;g.lineWidth=1.2;g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(x,y);g.stroke();
       g.beginPath();g.arc(a[0],a[1],2.5,0,7);g.fill();
       g.globalAlpha=.93;g.fillStyle=X.card;g.fillRect(x-w/2,y-9,w,18);g.globalAlpha=1;
@@ -462,7 +464,7 @@ function render(){
   FACES.filter(f=>nw(f)>0).forEach(f=>poly(f.v.map(T),fg,.07,fg,.8,[4,3]));
    // plane
   let pc=null,sv,dv;
-  const SV=bm==='struct'?STRUCT({T,poly,arrow,g,fg,card,sa,ca,W,H:Hc}):null;
+  const SV=bm==='struct'?STRUCT({T,poly,arrow,g,fg,card,sa,ca,W,H:Hc,bx:[ox+x0*sc,ox+x1*sc,oy-y1*sc,oy-y0*sc]}):null;
   if(act&&!SV){
     const s=act.d.a,d=act.d.b,dd=s+90;
     sv=[Math.sin(s*D),Math.cos(s*D),0];
@@ -473,7 +475,7 @@ function render(){
     if(q.length>2)poly(q.map(T),pc,.6,pc,2.2);
   }
   // front faces + top
-  FACES.filter(f=>nw(f)<=0).forEach(f=>poly(f.v.map(T),fg,f.n[2]?.1:.04,fg,1.4));
+  FACES.filter(f=>nw(f)<=0).forEach(f=>poly(f.v.map(T),fg,0,fg,1.4));
   // north arrow on top surface
   arrow(T([-.72,-.72,H]),T([-.72,-.2,H]),'#dc2626',2.4);label('N',T([-.72,-.02,H]),'#dc2626');
   if(SV){SV.lab();$('blkInfo').textContent=SV.info}
